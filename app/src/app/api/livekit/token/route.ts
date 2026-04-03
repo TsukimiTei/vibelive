@@ -1,5 +1,6 @@
 import { AccessToken } from "livekit-server-sdk";
 import { NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   const { room, identity, isPublisher } = await request.json();
@@ -9,6 +10,20 @@ export async function POST(request: NextRequest) {
       { error: "room 和 identity 为必填项" },
       { status: 400 }
     );
+  }
+
+  // Publisher tokens require authentication
+  let canPublish = false;
+  if (isPublisher) {
+    const supabase = await createClient();
+    if (!supabase) {
+      return Response.json({ error: "服务未配置" }, { status: 500 });
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return Response.json({ error: "开播需要登录" }, { status: 401 });
+    }
+    canPublish = true;
   }
 
   const apiKey = process.env.LIVEKIT_API_KEY;
@@ -29,7 +44,7 @@ export async function POST(request: NextRequest) {
   token.addGrant({
     room,
     roomJoin: true,
-    canPublish: !!isPublisher,
+    canPublish,
     canSubscribe: true,
     canPublishData: true,
   });

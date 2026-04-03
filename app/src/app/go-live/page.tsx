@@ -9,7 +9,9 @@ import {
   VideoPreset,
 } from "livekit-client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useNickname } from "@/lib/useNickname";
+import { createClient } from "@/lib/supabase/client";
 
 type BroadcastState = "idle" | "connecting" | "live" | "error";
 type QualityLevel = "720p" | "1080p" | "original" | "ultra";
@@ -31,8 +33,11 @@ interface ActiveStream {
 }
 
 export default function GoLivePage() {
+  const router = useRouter();
   const { nickname } = useNickname();
+  const [authChecked, setAuthChecked] = useState(false);
   const [roomName, setRoomName] = useState("");
+  const [codingTool, setCodingTool] = useState("cursor");
   const [quality, setQuality] = useState<QualityLevel>("ultra");
   const [state, setState] = useState<BroadcastState>("idle");
   const [error, setError] = useState("");
@@ -49,6 +54,22 @@ export default function GoLivePage() {
   const roomRef = useRef<Room | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startedAtRef = useRef<number>(0);
+
+  // Auth guard — redirect to login if not authenticated
+  useEffect(() => {
+    const supabase = createClient();
+    if (!supabase) {
+      router.replace("/login");
+      return;
+    }
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        router.replace("/login");
+      } else {
+        setAuthChecked(true);
+      }
+    });
+  }, [router]);
 
   // Callback ref: attaches screen share track as soon as the video element mounts
   const videoCallbackRef = useCallback((el: HTMLVideoElement | null) => {
@@ -177,7 +198,7 @@ export default function GoLivePage() {
         body: JSON.stringify({
           room_name: roomName.trim(),
           title: roomName.trim(),
-          coding_tool: "other",
+          coding_tool: codingTool,
         }),
       }).catch(() => {});
 
@@ -269,6 +290,16 @@ export default function GoLivePage() {
     saveProjectInfo({ stage: v });
   };
 
+  if (!authChecked) {
+    return (
+      <div className="ambient-gradient min-h-screen flex items-center justify-center">
+        <span className="font-[family-name:var(--font-pixel)] text-[11px] text-accent-cyan animate-pulse">
+          验证登录状态...
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className="ambient-gradient min-h-screen">
       <div className="mx-auto max-w-[1000px] px-4 py-6">
@@ -316,6 +347,37 @@ export default function GoLivePage() {
                   <span className="text-xs text-accent-cyan">{nickname}</span>
                 </div>
               )}
+
+              <div>
+                <label className="block text-xs text-text-secondary mb-1.5">
+                  AI 工具
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { key: "cursor", label: "Cursor" },
+                    { key: "copilot", label: "Copilot" },
+                    { key: "claude-code", label: "Claude Code" },
+                    { key: "windsurf", label: "Windsurf" },
+                    { key: "v0", label: "v0" },
+                    { key: "bolt", label: "Bolt" },
+                    { key: "replit", label: "Replit" },
+                    { key: "other", label: "其他" },
+                  ].map((t) => (
+                    <button
+                      key={t.key}
+                      type="button"
+                      onClick={() => setCodingTool(t.key)}
+                      className={`px-2.5 py-1.5 text-[10px] border-2 transition-colors ${
+                        codingTool === t.key
+                          ? "border-accent-purple text-accent-purple bg-accent-purple/10"
+                          : "border-border-pixel text-text-secondary hover:border-text-secondary"
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div>
                 <label className="block text-xs text-text-secondary mb-1.5">

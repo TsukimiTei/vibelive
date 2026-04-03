@@ -12,6 +12,7 @@ import {
 } from "@livekit/components-react";
 import { Track, RoomEvent } from "livekit-client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useNickname } from "@/lib/useNickname";
 
 // ── Types ────────────────────────────────────
@@ -306,7 +307,12 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
     project_name?: string; description?: string; stage?: string; streamer_name?: string; started_at?: string; user_id?: string;
   } | null>(null);
   const [isStreamer, setIsStreamer] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const router = useRouter();
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const encoder = new TextEncoder();
@@ -351,7 +357,16 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
               const supabase = createClient();
               if (supabase) {
                 const { data } = await supabase.auth.getUser();
-                setIsStreamer(data.user?.id === match.user_id);
+                const isOwner = data.user?.id === match.user_id;
+                setIsStreamer(isOwner);
+
+                // Check follow/favorite status
+                if (data.user && !isOwner) {
+                  fetch(`/api/follows?following_id=${match.user_id}`)
+                    .then(r => r.json()).then(d => setIsFollowing(d.isFollowing)).catch(() => {});
+                  fetch(`/api/favorites?room_name=${encodeURIComponent(decodeURIComponent(roomName))}`)
+                    .then(r => r.json()).then(d => setIsFavorited(d.isFavorited)).catch(() => {});
+                }
               }
             }
           }
@@ -420,6 +435,23 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
     const id = `${Date.now()}-${Math.random()}`;
     setBursts((prev) => [...prev, { id, kind: icon, x: 20 + Math.random() * 60 }]);
     setTimeout(() => setBursts((prev) => prev.filter((b) => b.id !== id)), 2000);
+  };
+
+  const endStream = async () => {
+    setEnding(true);
+    try {
+      await fetch("/api/streams", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ room_name: decodeURIComponent(roomName) }),
+      });
+      // Clean up go-live localStorage so it doesn't try to reconnect
+      localStorage.removeItem("vibelive_active_stream");
+      router.push("/");
+    } catch {
+      setEnding(false);
+      setShowEndConfirm(false);
+    }
   };
 
   const formatTime = (ts: number) => {
@@ -507,15 +539,50 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
           {streamInfo ? (
             <>
-              {/* Streamer badge */}
+              {/* Streamer management panel */}
               {isStreamer && (
-                <div className="flex items-center gap-2">
-                  <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-green bg-accent-green/10 border border-accent-green/30 px-2 py-0.5">
-                    主播模式 · 可编辑
-                  </span>
-                  {saving && (
-                    <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-yellow animate-pulse ml-auto">保存中...</span>
-                  )}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-green bg-accent-green/10 border border-accent-green/30 px-2 py-0.5">
+                      主播模式 · 可编辑
+                    </span>
+                    {saving && (
+                      <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-yellow animate-pulse ml-auto">保存中...</span>
+                    )}
+                  </div>
+                  {/* Stream controls */}
+                  <div className="flex gap-2">
+                    <Link
+                      href="/go-live"
+                      className="flex-1 text-center py-1.5 text-[10px] font-[family-name:var(--font-pixel)] border border-accent-cyan/40 text-accent-cyan hover:bg-accent-cyan/10 transition-colors"
+                    >
+                      开播控制台
+                    </Link>
+                    {!showEndConfirm ? (
+                      <button
+                        onClick={() => setShowEndConfirm(true)}
+                        className="flex-1 py-1.5 text-[10px] font-[family-name:var(--font-pixel)] border border-accent-pink/40 text-accent-pink hover:bg-accent-pink/10 transition-colors"
+                      >
+                        下播
+                      </button>
+                    ) : (
+                      <div className="flex-1 flex gap-1">
+                        <button
+                          onClick={endStream}
+                          disabled={ending}
+                          className="flex-1 py-1.5 text-[10px] font-[family-name:var(--font-pixel)] bg-accent-pink/20 border border-accent-pink text-accent-pink hover:bg-accent-pink hover:text-white transition-colors disabled:opacity-50"
+                        >
+                          {ending ? "结束中..." : "确认下播"}
+                        </button>
+                        <button
+                          onClick={() => setShowEndConfirm(false)}
+                          className="px-2 py-1.5 text-[10px] font-[family-name:var(--font-pixel)] border border-border-pixel text-text-secondary hover:text-text-primary transition-colors"
+                        >
+                          取消
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -595,6 +662,52 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
                   </p>
                 </div>
               )}
+
+              {/* Follow + Favorite buttons */}
+              {!isStreamer && streamInfo.user_id && (
+                <div className="border-t border-border-pixel/30 pt-3 flex gap-2">
+                  <button
+                    onClick={async () => {
+                      const method = isFollowing ? "DELETE" : "POST";
+                      await fetch("/api/follows", {
+                        method,
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ following_id: streamInfo.user_id }),
+                      });
+                      setIsFollowing(!isFollowing);
+                    }}
+                    className={`flex-1 py-1.5 text-[10px] font-[family-name:var(--font-pixel)] border transition-colors ${
+                      isFollowing
+                        ? "border-text-secondary text-text-secondary bg-bg-surface"
+                        : "border-accent-pink text-accent-pink hover:bg-accent-pink hover:text-white"
+                    }`}
+                  >
+                    {isFollowing ? "✓ 已关注" : "+ 关注"}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const method = isFavorited ? "DELETE" : "POST";
+                      await fetch("/api/favorites", {
+                        method,
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          room_name: decodeURIComponent(roomName),
+                          stream_title: streamInfo.project_name || streamInfo.streamer_name,
+                          streamer_name: streamInfo.streamer_name,
+                        }),
+                      });
+                      setIsFavorited(!isFavorited);
+                    }}
+                    className={`flex-1 py-1.5 text-[10px] font-[family-name:var(--font-pixel)] border transition-colors ${
+                      isFavorited
+                        ? "border-accent-yellow text-bg-primary bg-accent-yellow"
+                        : "border-accent-yellow text-accent-yellow hover:bg-accent-yellow hover:text-bg-primary"
+                    }`}
+                  >
+                    {isFavorited ? "★ 已收藏" : "☆ 收藏"}
+                  </button>
+                </div>
+              )}
             </>
           ) : (
             <p className="text-xs text-text-secondary/40 text-center py-8">加载中...</p>
@@ -624,6 +737,82 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
 }
 
 // ── Constants ────────────────────────────────
+// ── Watch Layout (handles desktop/mobile) ────
+function WatchLayout({
+  layoutMode, onLayoutChange, mobilePanel, onMobilePanelChange, identity, roomName,
+}: {
+  layoutMode: LayoutMode;
+  onLayoutChange: (m: LayoutMode) => void;
+  mobilePanel: "video" | "chat";
+  onMobilePanelChange: (p: "video" | "chat") => void;
+  identity: string;
+  roomName: string;
+}) {
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+  const [desktop, setDesktop] = useState(isDesktop);
+
+  useEffect(() => {
+    const check = () => setDesktop(window.innerWidth >= 1024);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  if (desktop) {
+    if (layoutMode === "theater") {
+      return (
+        <div className="flex flex-1 min-h-0">
+          <div className="flex-1 min-w-0 pixel-border-live m-2 mr-0 overflow-hidden">
+            <VideoArea layoutMode={layoutMode} onLayoutChange={onLayoutChange} />
+          </div>
+          <div className="w-[320px] shrink-0 m-2 flex flex-col">
+            <Sidebar viewerName={identity} roomName={roomName} />
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-[960px] px-4 py-3 space-y-3">
+          <div className="pixel-border-live aspect-video overflow-hidden">
+            <VideoArea layoutMode={layoutMode} onLayoutChange={onLayoutChange} />
+          </div>
+          <div className="h-[400px]">
+            <Sidebar viewerName={identity} roomName={roomName} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Mobile
+  if (mobilePanel === "video") {
+    return (
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="pixel-border-live m-1 aspect-video overflow-hidden shrink-0">
+          <VideoArea layoutMode="default" onLayoutChange={onLayoutChange} />
+        </div>
+        <div className="px-2 py-1 flex items-center gap-2">
+          <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary truncate flex-1">
+            {decodeURIComponent(roomName)}
+          </span>
+          <button
+            onClick={() => onMobilePanelChange("chat")}
+            className="px-2 py-1 text-[9px] border border-accent-cyan text-accent-cyan font-[family-name:var(--font-pixel)]"
+          >
+            💬 聊天
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col flex-1 min-h-0 m-1">
+      <Sidebar viewerName={identity} roomName={roomName} />
+    </div>
+  );
+}
+
 const NICKNAME_KEY = "vibelive-nickname";
 const CHAT_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -779,57 +968,15 @@ export default function WatchPage({
         </div>
       </div>
 
-      <LiveKitRoom serverUrl={livekitUrl} token={token!} connect={true}>
-        {/* ── Desktop layout ── */}
-        {isTheater ? (
-          <div className="hidden lg:flex flex-1 min-h-0">
-            <div className="flex-1 min-w-0 pixel-border-live m-2 mr-0 overflow-hidden">
-              <VideoArea layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
-            </div>
-            <div className="w-[320px] shrink-0 m-2">
-              <Sidebar viewerName={identity} roomName={roomName} />
-            </div>
-          </div>
-        ) : (
-          <div className="hidden lg:block flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-[960px] px-4 py-3 space-y-3">
-              <div className="pixel-border-live aspect-video overflow-hidden">
-                <VideoArea layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
-              </div>
-              <div className="h-[400px]">
-                <Sidebar viewerName={identity} roomName={roomName} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── Mobile layout ── */}
-        <div className="flex flex-col flex-1 min-h-0 lg:hidden">
-          {mobilePanel === "video" ? (
-            <div className="flex flex-col flex-1 min-h-0">
-              <div className="pixel-border-live m-1 aspect-video overflow-hidden shrink-0">
-                <VideoArea layoutMode="default" onLayoutChange={setLayoutMode} />
-              </div>
-              {/* Mini reaction bar below video on mobile */}
-              <div className="px-2 py-1 flex items-center gap-2">
-                <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary truncate flex-1">
-                  {decodeURIComponent(roomName)}
-                </span>
-                <button
-                  onClick={() => setMobilePanel("chat")}
-                  className="px-2 py-1 text-[9px] border border-accent-cyan text-accent-cyan font-[family-name:var(--font-pixel)]"
-                >
-                  💬 聊天
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex-1 min-h-0 m-1">
-              <Sidebar viewerName={identity} roomName={roomName} />
-            </div>
-          )}
-        </div>
-
+      <LiveKitRoom serverUrl={livekitUrl} token={token!} connect={true} className="flex flex-col flex-1 min-h-0">
+        <WatchLayout
+          layoutMode={layoutMode}
+          onLayoutChange={setLayoutMode}
+          mobilePanel={mobilePanel}
+          onMobilePanelChange={setMobilePanel}
+          identity={identity}
+          roomName={roomName}
+        />
         <RoomAudioRenderer />
       </LiveKitRoom>
 
