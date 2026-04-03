@@ -1,0 +1,162 @@
+[
+  {
+    "id": "broadcaster_1",
+    "username": "codingmaestro",
+    "displayName": "CodingMaestro",
+    "avatarUrl": "/images/avatars/avatar_1.png",
+    "bio": "专注于前端开发和AI算法，热爱分享编程技巧和项目经验。",
+    "followers": 15678,
+    "totalStreams": 120,
+    "totalViewers": 89765,
+    "preferredTools": [
+      "cursor",
+      "copilot"
+    ],
+    "socialLinks": {
+      "github": "codingmaestro",
+      "twitter": "codingmaestro_dev"
+    },
+    "isLive": true,
+    "joinedAt": "2024-03-10T14:30:00Z"
+  },
+  {
+    "id": "broadcaster_2",
+    "username": "ai_architect",
+    "displayName": "AI Architect",
+    "avatarUrl": "/images/avatars/avatar_2.png",
+    "bio": "探索人工智能的边界，从机器学习到深度学习，构建智能系统。",
+    "followers": 9876,
+    "totalStreams": 85,
+    "totalViewers": 54321,
+    "preferredTools": [
+      "claude_code",
+      "bolt"
+    ],
+    "socialLinks": {
+      "github": "ai-architect",
+      "twitter": "ai_architect_tech"
+    },
+    "isLive": false,
+    "joinedAt": "2024-02-20T10:00:00Z"
+  },
+  {
+    "id": "broadcaster_3",
+    "username": "webdev_wiz",
+    "displayName": "WebDev Wiz",
+    "avatarUrl": "/images/avatars/avatar_3.png",
+    "bio": "全栈开发者，精通React和Node.js，热衷于创造用户友好的网络应用。",
+    "followers": 23456,
+    "totalStreams": 150,
+    "totalViewers": 112233,
+    "preferredTools": [
+      "replit",
+      "copilot"
+    ],
+    "socialLinks": {
+      "github": "webdevwiz",
+      "twitter": "webdevwiz_io"
+    },
+    "isLive": true,
+    "joinedAt": "2023-11-01T09:00:00Z"
+  },
+  {
+    "id": "broadcaster_4",
+    "username": "data_scientist_x",
+    "displayName": "Data Scientist X",
+    "avatarUrl": "/images/avatars/avatar_4.png",
+    "bio": "数据科学爱好者，专注于数据分析、可视化和预测模型构建。",
+    "followers": 7890,
+    "totalStreams": 60,
+    "totalViewers": 34567,
+    "preferredTools": [
+      "cursor",
+      "windsurf"
+    ],
+    "socialLinks": {
+      "github": "datasci_x",
+      "twitter": "datasci_x_analyst"
+    },
+    "isLive": false,
+    "joinedAt": "2024-01-05T11:00:00Z"
+  },
+  {
+    "id": "broadcaster_5",
+    "username": "game_dev_guru",
+    "displayName": "Game Dev Guru",
+    "avatarUrl": "/images/avatars/avatar_5.png",
+    "bio": "独立游戏开发者，分享游戏设计和编程的心得，从概念到发布。",
+    "followers": 11223,
+    "totalStreams": 90,
+    "totalViewers": 67890,
+    "preferredTools": [
+      "bolt",
+      "copilot"
+    ],
+    "socialLinks": {
+      "github": "gamedevguru",
+      "twitter": "gamedevguru_play"
+    },
+    "isLive": true,
+    "joinedAt": "2023-10-20T16:00:00Z"
+  },
+  {
+    "id": "broadcaster_6",
+    "username": "devops_ninja",
+    "displayName": "DevOps Ninja",
+    "avatarUrl": "/images/avatars/avatar_6.png",
+    "bio": "DevOps实践者，自动化部署、CI/CD和云基础设施专家。",
+    "followers": 6543,
+    "totalStreams": 70,
+    "totalViewers": 45678,
+    "preferredTools": [
+      "windsurf",
+      "replit"
+    ],
+    "socialLinks": {
+      "github": "devopsninja",
+      "twitter": "devops_ninja_tech"
+    },
+    "isLive": false,
+    "joinedAt": "2024-04-01T13:00:00Z"
+  },
+  {
+    "id": "broadcaster_7",
+    "username": "mobile_master",
+    "displayName": "Mobile Master",
+    "avatarUrl": "/images/avatars/avatar_7.png",
+    "bio": "iOS和Android应用开发，分享移动端技术和用户体验设计。",
+    "followers": 18901,
+    "totalStreams": 110,
+    "totalViewers": 98765,
+    "preferredTools": [
+      "v0",
+      "claude_code"
+    ],
+    "socialLinks": {
+      "github": "mobilemaster",
+      "twitter": "mobilemaster_dev"
+    },
+    "isLive": false,
+    "joinedAt": "2023-09-15T10:30:00Z"
+  },
+  {
+    "id": "broadcaster_8",
+    "username": "security_sensei",
+    "displayName": "Security Sensei",
+    "avatarUrl": "/images/avatars/avatar_8.png",
+    "bio": "网络安全专家，教授安全编程实践和漏洞分析。",
+    "followers": 9012,
+    "totalStreams": 55,
+    "totalViewers": 32109,
+    "preferredTools": [
+      "cursor",
+      "bolt"
+    ],
+    "socialLinks": {
+      "github": "securitysensei",
+      "twitter": "security_sensei_io"
+    },
+    "isLive": false,
+    "joinedAt": "2024-05-10T15:00:00Z"
+  }
+]

@@ -1,0 +1,587 @@
+[
+  {
+    "id": "project_1",
+    "name": "智能笔记助手",
+    "description": "这个项目旨在开发一个由AI驱动的智能笔记整理工具，它能自动分类、总结会议记录和学习资料。用户可以通过语音或文本输入，AI将实时提供见解和行动项建议，大大提升工作效率。",
+    "broadcasterId": "broadcaster_1",
+    "category": "notes",
+    "platform": "web",
+    "tools": [
+      "cursor",
+      "copilot"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_1.png",
+    "tags": [
+      "AI",
+      "效率",
+      "知识管理"
+    ],
+    "status": "published",
+    "productUrl": "https://www.vibelive.ai/project/smart-notes",
+    "reactions": {
+      "want_to_use": 876,
+      "interesting": 1234,
+      "excited": 543
+    },
+    "totalViewers": 5678,
+    "devTimeMinutes": 720,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-01-05T10:00:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-02-20T15:30:00Z"
+      },
+      {
+        "stage": "testing",
+        "label": "测试",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-03-10T11:00:00Z"
+      },
+      {
+        "stage": "deploying",
+        "label": "部署",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-03-25T09:00:00Z"
+      }
+    ],
+    "currentStage": "deploying",
+    "createdAt": "2025-01-01T08:00:00Z",
+    "updatedAt": "2025-03-25T10:00:00Z"
+  },
+  {
+    "id": "project_2",
+    "name": "代码审查机器人",
+    "description": "旨在创建一个自动化的AI代码审查机器人，能够识别代码中的潜在错误、性能瓶颈和安全漏洞。它还能根据团队的编码规范提供改进建议，大幅提升代码质量和开发效率。",
+    "broadcasterId": "broadcaster_2",
+    "category": "devtools",
+    "platform": "api",
+    "tools": [
+      "copilot",
+      "claude_code"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_2.png",
+    "tags": [
+      "AI",
+      "开发工具",
+      "代码质量"
+    ],
+    "status": "in_development",
+    "productUrl": null,
+    "reactions": {
+      "want_to_use": 456,
+      "interesting": 789,
+      "excited": 234
+    },
+    "totalViewers": 3456,
+    "devTimeMinutes": 240,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-03-05T14:00:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 75,
+        "isActive": true
+      }
+    ],
+    "currentStage": "building",
+    "createdAt": "2025-03-01T09:00:00Z",
+    "updatedAt": "2025-03-20T16:00:00Z"
+  },
+  {
+    "id": "project_3",
+    "name": "个性化学习路径规划",
+    "description": "此项目利用AI分析用户的学习习惯和知识掌握情况，为其量身定制最佳学习路径和推荐资源。它能根据用户反馈动态调整，确保学习过程高效且充满乐趣。",
+    "broadcasterId": "broadcaster_3",
+    "category": "education",
+    "platform": "web",
+    "tools": [
+      "cursor",
+      "v0"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_3.png",
+    "tags": [
+      "AI",
+      "教育",
+      "个性化"
+    ],
+    "status": "in_development",
+    "productUrl": null,
+    "reactions": {
+      "want_to_use": 321,
+      "interesting": 654,
+      "excited": 100
+    },
+    "totalViewers": 2100,
+    "devTimeMinutes": 300,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-02-10T11:30:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 90,
+        "isActive": true
+      }
+    ],
+    "currentStage": "building",
+    "createdAt": "2025-02-01T10:00:00Z",
+    "updatedAt": "2025-03-18T13:00:00Z"
+  },
+  {
+    "id": "project_4",
+    "name": "AI驱动的市场趋势分析",
+    "description": "开发一个AI平台，能够实时监测并分析社交媒体、新闻和市场报告，预测行业趋势和消费者行为。它将帮助企业快速做出决策，抓住市场机遇。",
+    "broadcasterId": "broadcaster_4",
+    "category": "marketing",
+    "platform": "desktop",
+    "tools": [
+      "windsurf",
+      "bolt"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_4.png",
+    "tags": [
+      "AI",
+      "市场分析",
+      "大数据"
+    ],
+    "status": "in_development",
+    "productUrl": null,
+    "reactions": {
+      "want_to_use": 678,
+      "interesting": 901,
+      "excited": 345
+    },
+    "totalViewers": 4321,
+    "devTimeMinutes": 360,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-03-10T09:00:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 50,
+        "isActive": true
+      }
+    ],
+    "currentStage": "building",
+    "createdAt": "2025-03-05T10:00:00Z",
+    "updatedAt": "2025-03-22T14:00:00Z"
+  },
+  {
+    "id": "project_5",
+    "name": "智能健康管理应用",
+    "description": "一个AI驱动的健康管理应用，能够通过分析用户数据（如运动、饮食、睡眠）提供个性化的健康建议。它还能预测潜在健康风险，并提醒用户及时就医或调整生活方式。",
+    "broadcasterId": "broadcaster_5",
+    "category": "health",
+    "platform": "mobile",
+    "tools": [
+      "replit",
+      "copilot"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_5.png",
+    "tags": [
+      "AI",
+      "健康",
+      "个性化"
+    ],
+    "status": "published",
+    "productUrl": "https://www.vibelive.ai/project/smart-health",
+    "reactions": {
+      "want_to_use": 987,
+      "interesting": 1500,
+      "excited": 700
+    },
+    "totalViewers": 7890,
+    "devTimeMinutes": 900,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2024-12-01T10:00:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-01-15T16:00:00Z"
+      },
+      {
+        "stage": "testing",
+        "label": "测试",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-02-05T11:00:00Z"
+      },
+      {
+        "stage": "deploying",
+        "label": "部署",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-02-28T09:00:00Z"
+      }
+    ],
+    "currentStage": "deploying",
+    "createdAt": "2024-11-25T08:00:00Z",
+    "updatedAt": "2025-02-28T10:00:00Z"
+  },
+  {
+    "id": "project_6",
+    "name": "AI视频内容生成器",
+    "description": "该项目旨在开发一个AI工具，能够根据文本描述自动生成短视频内容，包括配音、背景音乐和视觉效果。这对于营销人员和内容创作者来说，将极大地提高工作效率。",
+    "broadcasterId": "broadcaster_6",
+    "category": "video",
+    "platform": "web",
+    "tools": [
+      "v0",
+      "claude_code"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_6.png",
+    "tags": [
+      "AI",
+      "视频制作",
+      "内容创作"
+    ],
+    "status": "in_development",
+    "productUrl": null,
+    "reactions": {
+      "want_to_use": 500,
+      "interesting": 800,
+      "excited": 250
+    },
+    "totalViewers": 3000,
+    "devTimeMinutes": 480,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-03-01T10:00:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 60,
+        "isActive": true
+      }
+    ],
+    "currentStage": "building",
+    "createdAt": "2025-02-25T09:00:00Z",
+    "updatedAt": "2025-03-20T15:00:00Z"
+  },
+  {
+    "id": "project_7",
+    "name": "社交媒体情绪分析",
+    "description": "一个AI驱动的社交媒体工具，能够实时分析用户评论和帖子中的情感倾向。这有助于品牌了解公众对其产品或服务的看法，并及时调整营销策略。",
+    "broadcasterId": "broadcaster_7",
+    "category": "social",
+    "platform": "cli",
+    "tools": [
+      "cursor",
+      "bolt"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_7.png",
+    "tags": [
+      "AI",
+      "社交媒体",
+      "情感分析"
+    ],
+    "status": "in_development",
+    "productUrl": null,
+    "reactions": {
+      "want_to_use": 400,
+      "interesting": 700,
+      "excited": 200
+    },
+    "totalViewers": 2500,
+    "devTimeMinutes": 200,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-03-15T11:00:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 40,
+        "isActive": true
+      }
+    ],
+    "currentStage": "building",
+    "createdAt": "2025-03-10T08:00:00Z",
+    "updatedAt": "2025-03-24T12:00:00Z"
+  },
+  {
+    "id": "project_8",
+    "name": "AI游戏NPC行为模拟",
+    "description": "此项目专注于为游戏开发智能NPC行为，使其能根据玩家行为和游戏环境做出更真实、更复杂的反应。这将大大提升游戏的沉浸感和可玩性。",
+    "broadcasterId": "broadcaster_8",
+    "category": "gaming",
+    "platform": "api",
+    "tools": [
+      "copilot",
+      "windsurf"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_8.png",
+    "tags": [
+      "AI",
+      "游戏开发",
+      "NPC"
+    ],
+    "status": "in_development",
+    "productUrl": null,
+    "reactions": {
+      "want_to_use": 600,
+      "interesting": 950,
+      "excited": 300
+    },
+    "totalViewers": 4000,
+    "devTimeMinutes": 540,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-02-20T14:00:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 80,
+        "isActive": true
+      }
+    ],
+    "currentStage": "building",
+    "createdAt": "2025-02-15T09:00:00Z",
+    "updatedAt": "2025-03-21T16:00:00Z"
+  },
+  {
+    "id": "project_9",
+    "name": "智能财务报表分析",
+    "description": "一个利用AI技术自动分析财务报表，识别关键财务指标和潜在风险的平台。它能为企业提供深入的财务洞察，辅助决策者做出更明智的投资和经营选择。",
+    "broadcasterId": "broadcaster_1",
+    "category": "finance",
+    "platform": "desktop",
+    "tools": [
+      "replit",
+      "cursor"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_9.png",
+    "tags": [
+      "AI",
+      "金融",
+      "数据分析"
+    ],
+    "status": "published",
+    "productUrl": "https://www.vibelive.ai/project/finance-analyzer",
+    "reactions": {
+      "want_to_use": 750,
+      "interesting": 1100,
+      "excited": 450
+    },
+    "totalViewers": 6500,
+    "devTimeMinutes": 780,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2024-12-10T09:00:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-01-25T17:00:00Z"
+      },
+      {
+        "stage": "testing",
+        "label": "测试",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-02-15T10:00:00Z"
+      },
+      {
+        "stage": "deploying",
+        "label": "部署",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-03-05T09:00:00Z"
+      }
+    ],
+    "currentStage": "deploying",
+    "createdAt": "2024-12-05T08:00:00Z",
+    "updatedAt": "2025-03-05T10:00:00Z"
+  },
+  {
+    "id": "project_10",
+    "name": "AI驱动的会议纪要生成",
+    "description": "一个能够实时转录会议内容并自动生成结构化纪要的AI工具。它能识别发言人、总结讨论要点和分配任务，极大提高会议效率。",
+    "broadcasterId": "broadcaster_2",
+    "category": "productivity",
+    "platform": "web",
+    "tools": [
+      "claude_code",
+      "copilot"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_10.png",
+    "tags": [
+      "AI",
+      "效率",
+      "会议"
+    ],
+    "status": "in_development",
+    "productUrl": null,
+    "reactions": {
+      "want_to_use": 550,
+      "interesting": 880,
+      "excited": 280
+    },
+    "totalViewers": 3800,
+    "devTimeMinutes": 420,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-03-08T10:00:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 70,
+        "isActive": true
+      }
+    ],
+    "currentStage": "building",
+    "createdAt": "2025-03-05T09:00:00Z",
+    "updatedAt": "2025-03-23T14:00:00Z"
+  },
+  {
+    "id": "project_11",
+    "name": "智能图像识别与标注",
+    "description": "此项目旨在开发一个AI系统，能够高精度地识别图像中的物体、场景和人脸，并自动进行标注。这对于数据管理、安全监控和内容审核等领域具有巨大潜力。",
+    "broadcasterId": "broadcaster_3",
+    "category": "devtools",
+    "platform": "api",
+    "tools": [
+      "v0",
+      "windsurf"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_11.png",
+    "tags": [
+      "AI",
+      "图像处理",
+      "机器学习"
+    ],
+    "status": "in_development",
+    "productUrl": null,
+    "reactions": {
+      "want_to_use": 480,
+      "interesting": 720,
+      "excited": 210
+    },
+    "totalViewers": 3100,
+    "devTimeMinutes": 600,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-02-25T11:00:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 85,
+        "isActive": true
+      }
+    ],
+    "currentStage": "building",
+    "createdAt": "2025-02-20T08:00:00Z",
+    "updatedAt": "2025-03-20T13:00:00Z"
+  },
+  {
+    "id": "project_12",
+    "name": "AI驱动的个性化新闻聚合",
+    "description": "一个AI新闻聚合平台，它能根据用户的阅读偏好和兴趣，智能筛选并推荐个性化新闻内容。用户可以获得量身定制的信息流，节省时间并提高信息获取效率。",
+    "broadcasterId": "broadcaster_4",
+    "category": "social",
+    "platform": "mobile",
+    "tools": [
+      "bolt",
+      "replit"
+    ],
+    "thumbnailUrl": "/images/thumbnails/project_12.png",
+    "tags": [
+      "AI",
+      "新闻",
+      "个性化"
+    ],
+    "status": "in_development",
+    "productUrl": null,
+    "reactions": {
+      "want_to_use": 380,
+      "interesting": 650,
+      "excited": 180
+    },
+    "totalViewers": 2800,
+    "devTimeMinutes": 280,
+    "stages": [
+      {
+        "stage": "planning",
+        "label": "规划",
+        "progress": 100,
+        "isActive": false,
+        "completedAt": "2025-03-12T10:00:00Z"
+      },
+      {
+        "stage": "building",
+        "label": "构建",
+        "progress": 55,
+        "isActive": true
+      }
+    ],
+    "currentStage": "building",
+    "createdAt": "2025-03-08T09:00:00Z",
+    "updatedAt": "2025-03-25T15:00:00Z"
+  }
+]

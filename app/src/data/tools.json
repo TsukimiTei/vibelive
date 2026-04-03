@@ -1,0 +1,58 @@
+[
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "icon": "/images/tools/cursor.svg",
+    "color": "#000000",
+    "description": "AI-first 代码编辑器，基于 VS Code",
+    "usagePercent": 35
+  },
+  {
+    "id": "copilot",
+    "name": "GitHub Copilot",
+    "icon": "/images/tools/copilot.svg",
+    "color": "#6E40C9",
+    "description": "GitHub 官方 AI 编程助手",
+    "usagePercent": 25
+  },
+  {
+    "id": "windsurf",
+    "name": "Windsurf",
+    "icon": "/images/tools/windsurf.svg",
+    "color": "#0EA5E9",
+    "description": "Codeium 出品的 AI 编码环境",
+    "usagePercent": 12
+  },
+  {
+    "id": "v0",
+    "name": "v0",
+    "icon": "/images/tools/v0.svg",
+    "color": "#FFFFFF",
+    "description": "Vercel AI UI 生成工具",
+    "usagePercent": 10
+  },
+  {
+    "id": "bolt",
+    "name": "Bolt",
+    "icon": "/images/tools/bolt.svg",
+    "color": "#F59E0B",
+    "description": "StackBlitz AI 全栈开发平台",
+    "usagePercent": 8
+  },
+  {
+    "id": "replit",
+    "name": "Replit",
+    "icon": "/images/tools/replit.svg",
+    "color": "#F26207",
+    "description": "在线 AI 编程与部署平台",
+    "usagePercent": 5
+  },
+  {
+    "id": "claude_code",
+    "name": "Claude Code",
+    "icon": "/images/tools/claude_code.svg",
+    "color": "#D97706",
+    "description": "Anthropic 终端 AI 编程工具",
+    "usagePercent": 5
+  }
+]

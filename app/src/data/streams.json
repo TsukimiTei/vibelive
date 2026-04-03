@@ -1,0 +1,262 @@
+[
+  {
+    "id": "stream_1",
+    "title": "使用AI助手构建实时聊天应用",
+    "description": "从零开始，利用Vibelive AI和React构建一个功能齐全的实时聊天应用，探索AI在前端开发中的无限可能。",
+    "broadcasterId": "broadcaster_1",
+    "projectId": "project_1",
+    "status": "live",
+    "thumbnailUrl": "/images/thumbnails/stream_1.png",
+    "viewerCount": 128,
+    "peakViewers": 180,
+    "reactions": {
+      "want_to_use": 89,
+      "interesting": 156,
+      "excited": 45
+    },
+    "detectedTool": "cursor",
+    "currentStage": "building",
+    "startedAt": "2024-07-28T10:30:00Z",
+    "endedAt": null,
+    "durationMinutes": null,
+    "tags": [
+      "AI笔记",
+      "React",
+      "前端"
+    ]
+  },
+  {
+    "id": "stream_2",
+    "title": "Copilot驱动的Python数据分析工作流",
+    "description": "跟随直播，看Copilot如何加速我们的Python数据分析项目，从数据清洗到可视化，全程AI辅助。",
+    "broadcasterId": "broadcaster_2",
+    "projectId": "project_2",
+    "status": "live",
+    "thumbnailUrl": "/images/thumbnails/stream_2.png",
+    "viewerCount": 95,
+    "peakViewers": 112,
+    "reactions": {
+      "want_to_use": 72,
+      "interesting": 110,
+      "excited": 30
+    },
+    "detectedTool": "copilot",
+    "currentStage": "debugging",
+    "startedAt": "2024-07-28T11:00:00Z",
+    "endedAt": null,
+    "durationMinutes": null,
+    "tags": [
+      "Python",
+      "数据科学",
+      "机器学习"
+    ]
+  },
+  {
+    "id": "stream_3",
+    "title": "Windsurf与TypeScript：大型项目性能优化",
+    "description": "深度解析Windsurf在TypeScript大型项目中的应用，聚焦性能瓶颈识别与优化策略。",
+    "broadcasterId": "broadcaster_3",
+    "projectId": "project_3",
+    "status": "live",
+    "thumbnailUrl": "/images/thumbnails/stream_3.png",
+    "viewerCount": 78,
+    "peakViewers": 99,
+    "reactions": {
+      "want_to_use": 60,
+      "interesting": 88,
+      "excited": 25
+    },
+    "detectedTool": "windsurf",
+    "currentStage": "testing",
+    "startedAt": "2024-07-28T09:45:00Z",
+    "endedAt": null,
+    "durationMinutes": null,
+    "tags": [
+      "TypeScript",
+      "后端",
+      "性能优化"
+    ]
+  },
+  {
+    "id": "stream_4",
+    "title": "v0快速原型：AI产品概念验证",
+    "description": "回顾如何利用v0快速生成AI产品原型，从构思到初步实现，见证AI设计的效率。",
+    "broadcasterId": "broadcaster_4",
+    "projectId": "project_4",
+    "status": "ended",
+    "thumbnailUrl": "/images/thumbnails/stream_4.png",
+    "viewerCount": 0,
+    "peakViewers": 230,
+    "reactions": {
+      "want_to_use": 150,
+      "interesting": 200,
+      "excited": 80
+    },
+    "detectedTool": "v0",
+    "currentStage": "deploying",
+    "startedAt": "2024-07-20T10:00:00Z",
+    "endedAt": "2024-07-20T12:30:00Z",
+    "durationMinutes": 150,
+    "tags": [
+      "AI设计",
+      "原型",
+      "UI/UX"
+    ]
+  },
+  {
+    "id": "stream_5",
+    "title": "Bolt框架：构建高性能Go微服务",
+    "description": "深入浅出Bolt框架，实战演示如何构建高并发、可伸缩的Go语言微服务。",
+    "broadcasterId": "broadcaster_5",
+    "projectId": "project_5",
+    "status": "ended",
+    "thumbnailUrl": "/images/thumbnails/stream_5.png",
+    "viewerCount": 0,
+    "peakViewers": 190,
+    "reactions": {
+      "want_to_use": 120,
+      "interesting": 170,
+      "excited": 60
+    },
+    "detectedTool": "bolt",
+    "currentStage": "refactoring",
+    "startedAt": "2024-07-18T14:00:00Z",
+    "endedAt": "2024-07-18T16:15:00Z",
+    "durationMinutes": 135,
+    "tags": [
+      "Go",
+      "微服务",
+      "后端"
+    ]
+  },
+  {
+    "id": "stream_6",
+    "title": "Replit上的WebAssembly与Rust开发",
+    "description": "在Replit环境中探索WebAssembly的魅力，用Rust编写高性能的Web模块。",
+    "broadcasterId": "broadcaster_6",
+    "projectId": "project_6",
+    "status": "ended",
+    "thumbnailUrl": "/images/thumbnails/stream_6.png",
+    "viewerCount": 0,
+    "peakViewers": 160,
+    "reactions": {
+      "want_to_use": 90,
+      "interesting": 130,
+      "excited": 40
+    },
+    "detectedTool": "replit",
+    "currentStage": "brainstorming",
+    "startedAt": "2024-07-15T09:00:00Z",
+    "endedAt": "2024-07-15T11:00:00Z",
+    "durationMinutes": 120,
+    "tags": [
+      "Rust",
+      "WebAssembly",
+      "前端"
+    ]
+  },
+  {
+    "id": "stream_7",
+    "title": "Claude Code辅助的Java算法优化",
+    "description": "利用Claude Code的强大能力，对复杂Java算法进行优化，提升执行效率。",
+    "broadcasterId": "broadcaster_7",
+    "projectId": "project_7",
+    "status": "ended",
+    "thumbnailUrl": "/images/thumbnails/stream_7.png",
+    "viewerCount": 0,
+    "peakViewers": 185,
+    "reactions": {
+      "want_to_use": 110,
+      "interesting": 160,
+      "excited": 55
+    },
+    "detectedTool": "claude_code",
+    "currentStage": "planning",
+    "startedAt": "2024-07-12T13:00:00Z",
+    "endedAt": "2024-07-12T15:45:00Z",
+    "durationMinutes": 165,
+    "tags": [
+      "Java",
+      "算法",
+      "后端"
+    ]
+  },
+  {
+    "id": "stream_8",
+    "title": "Cursor集成：TypeScript全栈开发实践",
+    "description": "通过Cursor集成，演示TypeScript在全栈项目中的无缝开发体验，从数据库到UI。",
+    "broadcasterId": "broadcaster_8",
+    "projectId": "project_8",
+    "status": "ended",
+    "thumbnailUrl": "/images/thumbnails/stream_8.png",
+    "viewerCount": 0,
+    "peakViewers": 210,
+    "reactions": {
+      "want_to_use": 130,
+      "interesting": 190,
+      "excited": 70
+    },
+    "detectedTool": "cursor",
+    "currentStage": "reviewing",
+    "startedAt": "2024-07-10T10:00:00Z",
+    "endedAt": "2024-07-10T12:10:00Z",
+    "durationMinutes": 130,
+    "tags": [
+      "TypeScript",
+      "全栈",
+      "数据库"
+    ]
+  },
+  {
+    "id": "stream_9",
+    "title": "Copilot X：下一代AI编程的展望",
+    "description": "一场关于Copilot X未来功能的探讨，以及它将如何彻底改变我们的编码方式。",
+    "broadcasterId": "broadcaster_1",
+    "projectId": "project_9",
+    "status": "scheduled",
+    "thumbnailUrl": "/images/thumbnails/stream_9.png",
+    "viewerCount": 0,
+    "peakViewers": 0,
+    "reactions": {
+      "want_to_use": 200,
+      "interesting": 300,
+      "excited": 100
+    },
+    "detectedTool": "copilot",
+    "currentStage": "preparing",
+    "startedAt": "2025-03-20T14:00:00Z",
+    "endedAt": null,
+    "durationMinutes": null,
+    "tags": [
+      "AI编程",
+      "未来趋势",
+      "技术前沿"
+    ]
+  },
+  {
+    "id": "stream_10",
+    "title": "Windsurf实践：微前端架构下的组件通信",
+    "description": "探索Windsurf在微前端架构中的应用，重点关注不同微应用之间的组件通信和状态管理。",
+    "broadcasterId": "broadcaster_2",
+    "projectId": "project_10",
+    "status": "live",
+    "thumbnailUrl": "/images/thumbnails/stream_10.png",
+    "viewerCount": 65,
+    "peakViewers": 88,
+    "reactions": {
+      "want_to_use": 55,
+      "interesting": 75,
+      "excited": 20
+    },
+    "detectedTool": "windsurf",
+    "currentStage": "optimizing",
+    "startedAt": "2024-07-28T11:45:00Z",
+    "endedAt": null,
+    "durationMinutes": null,
+    "tags": [
+      "微前端",
+      "前端",
+      "架构"
+    ]
+  }
+]

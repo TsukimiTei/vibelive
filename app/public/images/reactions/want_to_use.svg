@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" shape-rendering="crispEdges">
+  <!-- Pixel star with sparkle -->
+  <!-- Star top point -->
+  <rect x="10" y="1" width="2" height="2" fill="#FFD700"/>
+  <rect x="12" y="1" width="2" height="2" fill="#FFD700"/>
+  <rect x="10" y="3" width="2" height="2" fill="#FFD700"/>
+  <rect x="12" y="3" width="2" height="2" fill="#FFD700"/>
+  <!-- Star upper body -->
+  <rect x="8" y="5" width="2" height="2" fill="#FFD700"/>
+  <rect x="10" y="5" width="2" height="2" fill="#FFF176"/>
+  <rect x="12" y="5" width="2" height="2" fill="#FFF176"/>
+  <rect x="14" y="5" width="2" height="2" fill="#FFD700"/>
+  <!-- Star wide row (arms) -->
+  <rect x="0" y="7" width="2" height="2" fill="#FFD700"/>
+  <rect x="2" y="7" width="2" height="2" fill="#FFD700"/>
+  <rect x="4" y="7" width="2" height="2" fill="#FFD700"/>
+  <rect x="6" y="7" width="2" height="2" fill="#FFD700"/>
+  <rect x="8" y="7" width="2" height="2" fill="#FFF176"/>
+  <rect x="10" y="7" width="2" height="2" fill="#FFF176"/>
+  <rect x="12" y="7" width="2" height="2" fill="#FFF176"/>
+  <rect x="14" y="7" width="2" height="2" fill="#FFF176"/>
+  <rect x="16" y="7" width="2" height="2" fill="#FFD700"/>
+  <rect x="18" y="7" width="2" height="2" fill="#FFD700"/>
+  <rect x="20" y="7" width="2" height="2" fill="#FFD700"/>
+  <rect x="22" y="7" width="2" height="2" fill="#FFD700"/>
+  <!-- Star middle -->
+  <rect x="2" y="9" width="2" height="2" fill="#FFD700"/>
+  <rect x="4" y="9" width="2" height="2" fill="#FFD700"/>
+  <rect x="6" y="9" width="2" height="2" fill="#FFF176"/>
+  <rect x="8" y="9" width="2" height="2" fill="#FFF176"/>
+  <rect x="10" y="9" width="2" height="2" fill="#FFF176"/>
+  <rect x="12" y="9" width="2" height="2" fill="#FFF176"/>
+  <rect x="14" y="9" width="2" height="2" fill="#FFF176"/>
+  <rect x="16" y="9" width="2" height="2" fill="#FFF176"/>
+  <rect x="18" y="9" width="2" height="2" fill="#FFD700"/>
+  <rect x="20" y="9" width="2" height="2" fill="#FFD700"/>
+  <!-- Star lower body -->
+  <rect x="4" y="11" width="2" height="2" fill="#FFD700"/>
+  <rect x="6" y="11" width="2" height="2" fill="#FFD700"/>
+  <rect x="8" y="11" width="2" height="2" fill="#FFF176"/>
+  <rect x="10" y="11" width="2" height="2" fill="#FFF176"/>
+  <rect x="12" y="11" width="2" height="2" fill="#FFF176"/>
+  <rect x="14" y="11" width="2" height="2" fill="#FFD700"/>
+  <rect x="16" y="11" width="2" height="2" fill="#FFD700"/>
+  <rect x="18" y="11" width="2" height="2" fill="#FFD700"/>
+  <!-- Star lower points -->
+  <rect x="4" y="13" width="2" height="2" fill="#FFD700"/>
+  <rect x="6" y="13" width="2" height="2" fill="#FFD700"/>
+  <rect x="8" y="13" width="2" height="2" fill="#FFD700"/>
+  <rect x="14" y="13" width="2" height="2" fill="#FFD700"/>
+  <rect x="16" y="13" width="2" height="2" fill="#FFD700"/>
+  <rect x="18" y="13" width="2" height="2" fill="#FFD700"/>
+  <!-- Bottom left leg -->
+  <rect x="2" y="15" width="2" height="2" fill="#FFD700"/>
+  <rect x="4" y="15" width="2" height="2" fill="#FFD700"/>
+  <rect x="8" y="15" width="2" height="2" fill="#FFD700"/>
+  <rect x="14" y="15" width="2" height="2" fill="#FFD700"/>
+  <rect x="18" y="15" width="2" height="2" fill="#FFD700"/>
+  <rect x="20" y="15" width="2" height="2" fill="#FFD700"/>
+  <rect x="0" y="17" width="2" height="2" fill="#FFD700"/>
+  <rect x="2" y="17" width="2" height="2" fill="#FFD700"/>
+  <rect x="8" y="17" width="2" height="2" fill="#FFD700"/>
+  <rect x="14" y="17" width="2" height="2" fill="#FFD700"/>
+  <rect x="20" y="17" width="2" height="2" fill="#FFD700"/>
+  <rect x="22" y="17" width="2" height="2" fill="#FFD700"/>
+  <!-- Sparkle accents -->
+  <rect x="20" y="1" width="1" height="1" fill="#FFFFFF"/>
+  <rect x="19" y="2" width="1" height="1" fill="#FFF9C4"/>
+  <rect x="21" y="2" width="1" height="1" fill="#FFF9C4"/>
+  <rect x="20" y="3" width="1" height="1" fill="#FFF9C4"/>
+  <rect x="2" y="3" width="1" height="1" fill="#FFFFFF"/>
+</svg>

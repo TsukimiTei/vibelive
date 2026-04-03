@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" shape-rendering="crispEdges">
+  <!-- Pixel notepad icon -->
+  <rect x="5" y="2" width="2" height="2" fill="#FFD93D"/>
+  <rect x="7" y="2" width="2" height="2" fill="#FFD93D"/>
+  <rect x="9" y="2" width="2" height="2" fill="#FFD93D"/>
+  <rect x="11" y="2" width="2" height="2" fill="#FFD93D"/>
+  <rect x="13" y="2" width="2" height="2" fill="#FFD93D"/>
+  <rect x="15" y="2" width="2" height="2" fill="#FFD93D"/>
+  <rect x="17" y="2" width="2" height="2" fill="#FFD93D"/>
+  <!-- Page body -->
+  <rect x="5" y="4" width="2" height="2" fill="#FFD93D"/>
+  <rect x="17" y="4" width="2" height="2" fill="#FFD93D"/>
+  <rect x="5" y="6" width="2" height="2" fill="#FFD93D"/>
+  <rect x="17" y="6" width="2" height="2" fill="#FFD93D"/>
+  <rect x="5" y="8" width="2" height="2" fill="#FFD93D"/>
+  <rect x="17" y="8" width="2" height="2" fill="#FFD93D"/>
+  <rect x="5" y="10" width="2" height="2" fill="#FFD93D"/>
+  <rect x="17" y="10" width="2" height="2" fill="#FFD93D"/>
+  <rect x="5" y="12" width="2" height="2" fill="#FFD93D"/>
+  <rect x="17" y="12" width="2" height="2" fill="#FFD93D"/>
+  <rect x="5" y="14" width="2" height="2" fill="#FFD93D"/>
+  <rect x="17" y="14" width="2" height="2" fill="#FFD93D"/>
+  <rect x="5" y="16" width="2" height="2" fill="#FFD93D"/>
+  <rect x="17" y="16" width="2" height="2" fill="#FFD93D"/>
+  <rect x="5" y="18" width="2" height="2" fill="#FFD93D"/>
+  <rect x="17" y="18" width="2" height="2" fill="#FFD93D"/>
+  <!-- Bottom edge -->
+  <rect x="5" y="20" width="2" height="2" fill="#FFD93D"/>
+  <rect x="7" y="20" width="2" height="2" fill="#FFD93D"/>
+  <rect x="9" y="20" width="2" height="2" fill="#FFD93D"/>
+  <rect x="11" y="20" width="2" height="2" fill="#FFD93D"/>
+  <rect x="13" y="20" width="2" height="2" fill="#FFD93D"/>
+  <rect x="15" y="20" width="2" height="2" fill="#FFD93D"/>
+  <rect x="17" y="20" width="2" height="2" fill="#FFD93D"/>
+  <!-- Fill interior lighter -->
+  <rect x="7" y="4" width="10" height="16" fill="#FFF3C4" opacity="0.4"/>
+  <!-- Text lines -->
+  <rect x="8" y="6" width="8" height="1" fill="#FFD93D" opacity="0.8"/>
+  <rect x="8" y="9" width="6" height="1" fill="#FFD93D" opacity="0.8"/>
+  <rect x="8" y="12" width="8" height="1" fill="#FFD93D" opacity="0.8"/>
+  <rect x="8" y="15" width="5" height="1" fill="#FFD93D" opacity="0.8"/>
+  <!-- Spiral binding -->
+  <rect x="3" y="4" width="2" height="2" fill="#E6C235"/>
+  <rect x="3" y="8" width="2" height="2" fill="#E6C235"/>
+  <rect x="3" y="12" width="2" height="2" fill="#E6C235"/>
+  <rect x="3" y="16" width="2" height="2" fill="#E6C235"/>
+</svg>

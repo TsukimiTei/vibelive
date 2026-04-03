@@ -1,0 +1,92 @@
+[
+  {
+    "id": "notes",
+    "label": "Notes",
+    "labelZh": "笔记",
+    "icon": "/images/categories/notes.svg",
+    "description": "笔记与知识管理工具",
+    "color": "#FFD93D",
+    "projectCount": 8
+  },
+  {
+    "id": "productivity",
+    "label": "Productivity",
+    "labelZh": "效率",
+    "icon": "/images/categories/productivity.svg",
+    "description": "提升工作效率的工具",
+    "color": "#6BCB77",
+    "projectCount": 15
+  },
+  {
+    "id": "marketing",
+    "label": "Marketing",
+    "labelZh": "营销",
+    "icon": "/images/categories/marketing.svg",
+    "description": "营销与增长工具",
+    "color": "#FF6B6B",
+    "projectCount": 6
+  },
+  {
+    "id": "video",
+    "label": "Video",
+    "labelZh": "视频",
+    "icon": "/images/categories/video.svg",
+    "description": "视频创作与编辑工具",
+    "color": "#4D96FF",
+    "projectCount": 4
+  },
+  {
+    "id": "social",
+    "label": "Social",
+    "labelZh": "社交",
+    "icon": "/images/categories/social.svg",
+    "description": "社交网络与通讯工具",
+    "color": "#9B59B6",
+    "projectCount": 5
+  },
+  {
+    "id": "gaming",
+    "label": "Gaming",
+    "labelZh": "游戏",
+    "icon": "/images/categories/gaming.svg",
+    "description": "游戏与互动娱乐",
+    "color": "#E74C3C",
+    "projectCount": 3
+  },
+  {
+    "id": "education",
+    "label": "Education",
+    "labelZh": "教育",
+    "icon": "/images/categories/education.svg",
+    "description": "教育与学习平台",
+    "color": "#1ABC9C",
+    "projectCount": 7
+  },
+  {
+    "id": "finance",
+    "label": "Finance",
+    "labelZh": "金融",
+    "icon": "/images/categories/finance.svg",
+    "description": "金融与财务管理",
+    "color": "#2ECC71",
+    "projectCount": 4
+  },
+  {
+    "id": "health",
+    "label": "Health",
+    "labelZh": "健康",
+    "icon": "/images/categories/health.svg",
+    "description": "健康与医疗应用",
+    "color": "#E91E63",
+    "projectCount": 3
+  },
+  {
+    "id": "devtools",
+    "label": "DevTools",
+    "labelZh": "开发工具",
+    "icon": "/images/categories/devtools.svg",
+    "description": "开发者工具与基础设施",
+    "color": "#607D8B",
+    "projectCount": 12
+  }
+]
