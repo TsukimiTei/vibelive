@@ -269,12 +269,17 @@ export default function GoLivePage() {
   };
 
   const uploadThumbnail = async (file: File) => {
+    if (file.size > 2 * 1024 * 1024) {
+      setError("封面图不能超过 2MB");
+      return;
+    }
     setUploading(true);
     try {
       const supabase = createClient();
       if (!supabase) throw new Error("未配置");
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `thumbnails/${Date.now()}.${ext}`;
+      const { data: { user } } = await supabase.auth.getUser();
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${user?.id || "anon"}/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("thumbnails").upload(path, file, { upsert: true });
       if (upErr) throw upErr;
       const { data: { publicUrl } } = supabase.storage.from("thumbnails").getPublicUrl(path);

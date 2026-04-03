@@ -944,10 +944,10 @@ export default function WatchPage({
       {/* Top bar */}
       <div className="flex items-center justify-between px-2 sm:px-4 py-2 hud-panel shrink-0">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <Link href="/" className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary hover:text-accent-cyan transition-colors shrink-0">
-            ◁ 返回
+          <Link href="/" className="font-[family-name:var(--font-pixel)] text-[11px] glow-green text-accent-green hover:opacity-80 transition-opacity shrink-0">
+            VIBELIVE
           </Link>
-          <span className="text-border-pixel hidden sm:inline">│</span>
+          <span className="text-border-pixel">│</span>
           <span className="font-[family-name:var(--font-pixel)] text-[10px] sm:text-[12px] text-text-primary truncate">
             {decodeURIComponent(roomName)}
           </span>

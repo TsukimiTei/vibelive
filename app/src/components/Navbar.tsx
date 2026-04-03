@@ -16,6 +16,7 @@ export function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeRoom, setActiveRoom] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const supabase = createClient();
 
   useEffect(() => {
@@ -33,6 +34,20 @@ export function Navbar() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Poll unread notification count
+  useEffect(() => {
+    if (!user) { setUnreadCount(0); return; }
+    const fetchCount = () => {
+      fetch("/api/notifications?unread=1")
+        .then(r => r.json())
+        .then(d => setUnreadCount(d.unread_count || 0))
+        .catch(() => {});
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   // Check for active stream from localStorage
   useEffect(() => {
@@ -120,6 +135,24 @@ export function Navbar() {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-3">
+          {/* Notification bell */}
+          {user && (
+            <Link
+              href="/notifications"
+              className="relative px-1.5 py-1 text-text-secondary hover:text-accent-yellow transition-colors"
+              title="通知"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+              </svg>
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] flex items-center justify-center bg-accent-pink text-white font-[family-name:var(--font-pixel)] text-[6px] px-0.5 leading-none">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </Link>
+          )}
+
           {activeRoom ? (
             <Link
               href="/go-live"

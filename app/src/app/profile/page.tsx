@@ -209,57 +209,7 @@ export default function ProfilePage() {
             {streams.length === 0 ? (
               <EmptyState text="还没有直播记录" />
             ) : (
-              streams.map((s) => {
-                const isLive = s.status === "live";
-                const duration = s.ended_at && s.started_at
-                  ? Math.floor((new Date(s.ended_at).getTime() - new Date(s.started_at).getTime()) / 1000)
-                  : null;
-                const formatDuration = (sec: number) => {
-                  const h = Math.floor(sec / 3600);
-                  const m = Math.floor((sec % 3600) / 60);
-                  return h > 0 ? `${h}小时${m}分钟` : `${m}分钟`;
-                };
-                return (
-                  <Link key={s.id} href={isLive ? `/watch/${s.room_name}` : "#"} className={`block ${isLive ? "group" : ""}`}>
-                    <div className={`pixel-border bg-bg-card p-3 flex items-center gap-3 ${isLive ? "card-glow" : ""}`}>
-                      {/* Thumbnail */}
-                      <div className="w-20 h-12 bg-bg-surface border border-border-pixel shrink-0 overflow-hidden">
-                        {s.thumbnail_url ? (
-                          <img src={s.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="flex items-center justify-center w-full h-full font-[family-name:var(--font-pixel)] text-[10px] text-text-secondary/30">
-                            📺
-                          </span>
-                        )}
-                      </div>
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className={`font-[family-name:var(--font-pixel)] text-[10px] ${isLive ? "text-accent-cyan group-hover:text-accent-green" : "text-text-primary"} transition-colors`}>
-                            {s.project_name || s.title || s.room_name}
-                          </span>
-                          {isLive && (
-                            <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-green bg-accent-green/10 border border-accent-green/30 px-1.5 py-0.5">
-                              LIVE
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-text-secondary truncate mt-0.5">
-                          {s.coding_tool !== "other" ? s.coding_tool + " · " : ""}
-                          {new Date(s.started_at).toLocaleDateString("zh-CN")}
-                          {duration !== null && ` · ${formatDuration(duration)}`}
-                        </p>
-                      </div>
-                      {/* Status */}
-                      <span className={`font-[family-name:var(--font-pixel)] text-[7px] shrink-0 ${
-                        isLive ? "text-accent-green" : "text-text-secondary/50"
-                      }`}>
-                        {isLive ? "直播中" : "已结束"}
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })
+              streams.map((s) => <StreamCard key={s.id} stream={s} />)
             )}
           </div>
         )}
@@ -387,6 +337,58 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+}
+
+function formatDuration(sec: number) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  return h > 0 ? `${h}小时${m}分钟` : `${m}分钟`;
+}
+
+function StreamCard({ stream: s }: { stream: StreamEntry }) {
+  const isLive = s.status === "live";
+  const duration = s.ended_at && s.started_at
+    ? Math.floor((new Date(s.ended_at).getTime() - new Date(s.started_at).getTime()) / 1000)
+    : null;
+
+  const content = (
+    <div className={`pixel-border bg-bg-card p-3 flex items-center gap-3 ${isLive ? "card-glow" : ""}`}>
+      <div className="w-20 h-12 bg-bg-surface border border-border-pixel shrink-0 overflow-hidden">
+        {s.thumbnail_url ? (
+          <img src={s.thumbnail_url} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <span className="flex items-center justify-center w-full h-full font-[family-name:var(--font-pixel)] text-[10px] text-text-secondary/30">
+            📺
+          </span>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className={`font-[family-name:var(--font-pixel)] text-[10px] ${isLive ? "text-accent-cyan group-hover:text-accent-green" : "text-text-primary"} transition-colors`}>
+            {s.project_name || s.title || s.room_name}
+          </span>
+          {isLive && (
+            <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-green bg-accent-green/10 border border-accent-green/30 px-1.5 py-0.5">
+              LIVE
+            </span>
+          )}
+        </div>
+        <p className="text-[11px] text-text-secondary truncate mt-0.5">
+          {s.coding_tool !== "other" ? s.coding_tool + " · " : ""}
+          {new Date(s.started_at).toLocaleDateString("zh-CN")}
+          {duration !== null && ` · ${formatDuration(duration)}`}
+        </p>
+      </div>
+      <span className={`font-[family-name:var(--font-pixel)] text-[7px] shrink-0 ${isLive ? "text-accent-green" : "text-text-secondary/50"}`}>
+        {isLive ? "直播中" : "已结束"}
+      </span>
+    </div>
+  );
+
+  if (isLive) {
+    return <Link href={`/watch/${s.room_name}`} className="block group">{content}</Link>;
+  }
+  return <div>{content}</div>;
 }
 
 function EmptyState({ text }: { text: string }) {

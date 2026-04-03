@@ -33,3 +33,8 @@ create policy "Authenticated update thumbnails"
   on storage.objects for update
   to authenticated
   using (bucket_id = 'thumbnails');
+
+create policy "Authenticated delete thumbnails"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'thumbnails');

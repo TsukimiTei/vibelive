@@ -9,21 +9,16 @@ export async function GET(request: NextRequest) {
     return Response.json({ streams: [] });
   }
 
-  const userId = request.nextUrl.searchParams.get("user_id");
   const history = request.nextUrl.searchParams.get("history");
 
-  // 查询某个用户的历史直播
-  if (userId || history) {
-    let targetUserId = userId;
-    if (history && !targetUserId) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return Response.json({ streams: [] });
-      targetUserId = user.id;
-    }
+  // 查询当前登录用户的历史直播（需要鉴权）
+  if (history) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return Response.json({ streams: [] });
     const { data, error } = await supabase
       .from("live_streams")
       .select("*")
-      .eq("user_id", targetUserId!)
+      .eq("user_id", user.id)
       .order("started_at", { ascending: false })
       .limit(50);
 
@@ -107,6 +102,27 @@ export async function POST(request: NextRequest) {
   if (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
+
+  // Notify followers that this user went live (fire and forget)
+  const streamerName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "匿名";
+  const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || "";
+  supabase
+    .from("follows")
+    .select("follower_id")
+    .eq("following_id", user.id)
+    .then(({ data: followers }) => {
+      if (!followers?.length) return;
+      const notifications = followers.map((f) => ({
+        user_id: f.follower_id,
+        type: "stream_live",
+        actor_id: user.id,
+        actor_name: streamerName,
+        actor_avatar: avatarUrl,
+        target_id: room_name,
+        target_title: (title || room_name).slice(0, 200),
+      }));
+      supabase.from("notifications").insert(notifications).then(() => {});
+    });
 
   return Response.json({ stream: data });
 }
