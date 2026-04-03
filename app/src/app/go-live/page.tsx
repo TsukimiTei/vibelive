@@ -36,6 +36,13 @@ export default function GoLivePage() {
   const [viewers, setViewers] = useState(0);
   const [elapsed, setElapsed] = useState(0);
 
+  // Project info
+  const [projectName, setProjectName] = useState("");
+  const [projectDesc, setProjectDesc] = useState("");
+  const [projectStage, setProjectStage] = useState("构思中");
+  const [saving, setSaving] = useState(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const roomRef = useRef<Room | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startedAtRef = useRef<number>(0);
@@ -224,6 +231,39 @@ export default function GoLivePage() {
     return `${h > 0 ? `${h}:` : ""}${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
+  const STAGES = ["构思中", "设计中", "编码中", "调试中", "测试中", "发布中", "已完成"];
+
+  // Auto-save project info with debounce
+  const saveProjectInfo = useCallback(
+    (fields: { project_name?: string; description?: string; stage?: string }) => {
+      if (!roomName) return;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(async () => {
+        setSaving(true);
+        await fetch("/api/streams", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ room_name: roomName.trim(), ...fields }),
+        }).catch(() => {});
+        setSaving(false);
+      }, 600);
+    },
+    [roomName]
+  );
+
+  const updateProjectName = (v: string) => {
+    setProjectName(v);
+    saveProjectInfo({ project_name: v });
+  };
+  const updateProjectDesc = (v: string) => {
+    setProjectDesc(v);
+    saveProjectInfo({ description: v });
+  };
+  const updateProjectStage = (v: string) => {
+    setProjectStage(v);
+    saveProjectInfo({ stage: v });
+  };
+
   return (
     <div className="ambient-gradient min-h-screen">
       <div className="mx-auto max-w-[1000px] px-4 py-6">
@@ -383,6 +423,70 @@ export default function GoLivePage() {
               >
                 ■ 结束直播
               </button>
+            </div>
+
+            {/* Project Info Editor */}
+            <div className="pixel-border bg-bg-card p-4 space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="font-[family-name:var(--font-pixel)] text-[8px] text-accent-purple">◈</span>
+                <span className="font-[family-name:var(--font-pixel)] text-[9px] text-text-secondary">
+                  项目信息
+                </span>
+                {saving && (
+                  <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-yellow ml-auto animate-pulse">
+                    保存中...
+                  </span>
+                )}
+                {!saving && projectName && (
+                  <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-green/50 ml-auto">
+                    ✓ 已保存
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-text-secondary mb-1">项目名称</label>
+                  <input
+                    type="text"
+                    value={projectName}
+                    onChange={(e) => updateProjectName(e.target.value)}
+                    placeholder="你正在做什么项目？"
+                    className="w-full bg-bg-primary border border-border-pixel px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/30 focus:border-accent-purple focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs text-text-secondary mb-1">当前阶段</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {STAGES.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => updateProjectStage(s)}
+                        className={`px-2 py-1 text-[10px] border transition-colors ${
+                          projectStage === s
+                            ? "border-accent-cyan text-accent-cyan bg-accent-cyan/10"
+                            : "border-border-pixel text-text-secondary hover:border-text-secondary"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-text-secondary mb-1">项目描述</label>
+                <textarea
+                  value={projectDesc}
+                  onChange={(e) => updateProjectDesc(e.target.value)}
+                  placeholder="简单介绍一下你的项目、用了什么技术栈、想解决什么问题..."
+                  rows={3}
+                  className="w-full bg-bg-primary border border-border-pixel px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/30 focus:border-accent-purple focus:outline-none transition-colors resize-none"
+                />
+              </div>
             </div>
           </div>
         )}
