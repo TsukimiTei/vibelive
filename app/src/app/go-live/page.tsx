@@ -218,7 +218,7 @@ export default function GoLivePage() {
       setState("error");
       setError(err instanceof Error ? err.message : "连接失败");
     }
-  }, [roomName, nickname]);
+  }, [roomName, nickname, quality, codingTool]);
 
   const stopBroadcast = useCallback(async () => {
     if (roomName) {
@@ -247,6 +247,12 @@ export default function GoLivePage() {
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      // Disconnect LiveKit room on unmount to prevent resource leaks
+      if (roomRef.current) {
+        roomRef.current.disconnect();
+        roomRef.current = null;
+      }
     };
   }, []);
 

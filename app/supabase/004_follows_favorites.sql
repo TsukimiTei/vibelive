@@ -14,8 +14,10 @@ create table public.follows (
 
 alter table public.follows enable row level security;
 
-create policy "Anyone can view follows"
-  on public.follows for select using (true);
+create policy "Users can view own follows"
+  on public.follows for select
+  to authenticated
+  using (auth.uid() = follower_id);
 
 create policy "Users can follow"
   on public.follows for insert
@@ -39,8 +41,10 @@ create table public.favorites (
 
 alter table public.favorites enable row level security;
 
-create policy "Anyone can view favorites"
-  on public.favorites for select using (true);
+create policy "Users can view own favorites"
+  on public.favorites for select
+  to authenticated
+  using (auth.uid() = user_id);
 
 create policy "Users can favorite"
   on public.favorites for insert
@@ -51,7 +55,10 @@ create policy "Users can unfavorite"
   on public.favorites for delete
   using (auth.uid() = user_id);
 
--- 3. 更新 profiles 的 followers_count 触发器
+-- 3. 确保 profiles 有 followers_count 字段
+alter table public.profiles add column if not exists followers_count int default 0;
+
+-- 4. 更新 profiles 的 followers_count 触发器
 create or replace function public.update_followers_count()
 returns trigger as $$
 begin

@@ -13,6 +13,7 @@ import {
 import { Track, RoomEvent } from "livekit-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { useNickname } from "@/lib/useNickname";
 
 // ── Types ────────────────────────────────────
@@ -37,6 +38,10 @@ const REACTION_CONFIG: Record<ReactionKind, { label: string; icon: string }> = {
   interesting: { label: "有趣", icon: "✨" },
   looking_forward: { label: "期待", icon: "🔥" },
 };
+
+const CHAT_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
 
 // ── Player Controls ──────────────────────────
 function PlayerControls({
@@ -280,12 +285,15 @@ function VideoArea({
 
 // ── Sidebar (Chat / Info / Users tabs) ───────
 const STAGES = ["构思中", "设计中", "编码中", "调试中", "测试中", "发布中", "已完成"];
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: string }) {
   const room = useRoomContext();
   const participants = useParticipants();
   const [tab, setTab] = useState<"chat" | "info" | "users">("chat");
-  const chatStorageKey = `vibelive-chat-${roomName}`;
+  const decodedRoom = decodeURIComponent(roomName);
+  const chatStorageKey = `vibelive-chat-${decodedRoom}`;
   const [messages, setMessages] = useState<ChatMsg[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -315,8 +323,6 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
   const router = useRouter();
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
 
   // Debounced save for streamer editing
   const saveField = useCallback(
@@ -328,7 +334,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
         await fetch("/api/streams", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ room_name: decodeURIComponent(roomName), ...fields }),
+          body: JSON.stringify({ room_name: decodedRoom, ...fields }),
         }).catch(() => {});
         setSaving(false);
       }, 600);
@@ -348,12 +354,11 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
         const res = await fetch("/api/streams");
         if (res.ok) {
           const { streams } = await res.json();
-          const match = streams.find((s: { room_name: string }) => s.room_name === decodeURIComponent(roomName));
+          const match = streams.find((s: { room_name: string }) => s.room_name === decodedRoom);
           if (match) {
             setStreamInfo(match);
             // Check ownership via Supabase
             if (match.user_id) {
-              const { createClient } = await import("@/lib/supabase/client");
               const supabase = createClient();
               if (supabase) {
                 const { data } = await supabase.auth.getUser();
@@ -364,7 +369,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
                 if (data.user && !isOwner) {
                   fetch(`/api/follows?following_id=${match.user_id}`)
                     .then(r => r.json()).then(d => setIsFollowing(d.isFollowing)).catch(() => {});
-                  fetch(`/api/favorites?room_name=${encodeURIComponent(decodeURIComponent(roomName))}`)
+                  fetch(`/api/favorites?room_name=${encodeURIComponent(decodedRoom)}`)
                     .then(r => r.json()).then(d => setIsFavorited(d.isFavorited)).catch(() => {});
                 }
               }
@@ -382,7 +387,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
   useEffect(() => {
     const handleData = (payload: Uint8Array) => {
       try {
-        const msg = JSON.parse(decoder.decode(payload));
+        const msg = JSON.parse(textDecoder.decode(payload));
         if (msg.type === "chat") {
           setMessages((prev) => [
             ...prev.slice(-200),
@@ -418,7 +423,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
   const sendChat = () => {
     const text = input.trim();
     if (!text) return;
-    const payload = encoder.encode(JSON.stringify({ type: "chat", user: viewerName, text }));
+    const payload = textEncoder.encode(JSON.stringify({ type: "chat", user: viewerName, text }));
     room.localParticipant.publishData(payload, { reliable: true });
     setMessages((prev) => [
       ...prev.slice(-200),
@@ -428,7 +433,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
   };
 
   const sendReaction = (kind: ReactionKind) => {
-    const payload = encoder.encode(JSON.stringify({ type: "reaction", kind, user: viewerName }));
+    const payload = textEncoder.encode(JSON.stringify({ type: "reaction", kind, user: viewerName }));
     room.localParticipant.publishData(payload, { reliable: true });
     setReactions((prev) => ({ ...prev, [kind]: (prev[kind] || 0) + 1 }));
     const icon = REACTION_CONFIG[kind].icon;
@@ -440,13 +445,15 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
   const endStream = async () => {
     setEnding(true);
     try {
-      await fetch("/api/streams", {
+      const res = await fetch("/api/streams", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ room_name: decodeURIComponent(roomName) }),
+        body: JSON.stringify({ room_name: decodedRoom }),
       });
+      if (!res.ok) throw new Error();
       // Clean up go-live localStorage so it doesn't try to reconnect
       localStorage.removeItem("vibelive_active_stream");
+      // Server-side DELETE also removes the LiveKit room, disconnecting all participants
       router.push("/");
     } catch {
       setEnding(false);
@@ -669,12 +676,12 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
                   <button
                     onClick={async () => {
                       const method = isFollowing ? "DELETE" : "POST";
-                      await fetch("/api/follows", {
+                      const res = await fetch("/api/follows", {
                         method,
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ following_id: streamInfo.user_id }),
                       });
-                      setIsFollowing(!isFollowing);
+                      if (res.ok) setIsFollowing(!isFollowing);
                     }}
                     className={`flex-1 py-1.5 text-[10px] font-[family-name:var(--font-pixel)] border transition-colors ${
                       isFollowing
@@ -687,16 +694,16 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
                   <button
                     onClick={async () => {
                       const method = isFavorited ? "DELETE" : "POST";
-                      await fetch("/api/favorites", {
+                      const res = await fetch("/api/favorites", {
                         method,
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                          room_name: decodeURIComponent(roomName),
+                          room_name: decodedRoom,
                           stream_title: streamInfo.project_name || streamInfo.streamer_name,
                           streamer_name: streamInfo.streamer_name,
                         }),
                       });
-                      setIsFavorited(!isFavorited);
+                      if (res.ok) setIsFavorited(!isFavorited);
                     }}
                     className={`flex-1 py-1.5 text-[10px] font-[family-name:var(--font-pixel)] border transition-colors ${
                       isFavorited
@@ -748,11 +755,11 @@ function WatchLayout({
   identity: string;
   roomName: string;
 }) {
-  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
-  const [desktop, setDesktop] = useState(isDesktop);
+  const [desktop, setDesktop] = useState(false);
 
   useEffect(() => {
     const check = () => setDesktop(window.innerWidth >= 1024);
+    check(); // sync on mount
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
@@ -812,9 +819,6 @@ function WatchLayout({
     </div>
   );
 }
-
-const NICKNAME_KEY = "vibelive-nickname";
-const CHAT_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 // ── Main Page ────────────────────────────────
 export default function WatchPage({

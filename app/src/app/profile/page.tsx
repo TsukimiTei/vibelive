@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-type Tab = "following" | "favorites" | "achievements";
+type Tab = "following" | "followers" | "favorites" | "achievements";
 
 interface FollowEntry {
   id: string;
@@ -51,6 +51,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<Tab>("following");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [follows, setFollows] = useState<FollowEntry[]>([]);
+  const [followers, setFollowers] = useState<FollowEntry[]>([]);
   const [favorites, setFavorites] = useState<FavoriteEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -75,8 +76,9 @@ export default function ProfilePage() {
         .single();
       if (profileData) setProfile(profileData);
 
-      // Fetch follows
+      // Fetch follows + followers
       fetch("/api/follows").then(r => r.json()).then(d => setFollows(d.follows || [])).catch(() => {});
+      fetch("/api/follows?type=followers").then(r => r.json()).then(d => setFollowers(d.followers || [])).catch(() => {});
 
       // Fetch favorites
       fetch("/api/favorites").then(r => r.json()).then(d => setFavorites(d.favorites || [])).catch(() => {});
@@ -142,8 +144,8 @@ export default function ProfilePage() {
               <div className="grid grid-cols-2 gap-3 shrink-0">
                 {[
                   { label: "关注", value: follows.length, color: "text-accent-pink" },
+                  { label: "粉丝", value: followers.length, color: "text-accent-cyan" },
                   { label: "收藏", value: favorites.length, color: "text-accent-yellow" },
-                  { label: "粉丝", value: profile?.followers_count || 0, color: "text-accent-cyan" },
                   { label: "成就", value: ACHIEVEMENTS.filter(a => a.unlocked).length, color: "text-accent-green" },
                 ].map((stat) => (
                   <div key={stat.label} className="pixel-border bg-bg-primary/50 p-2 text-center min-w-[80px]">
@@ -163,8 +165,9 @@ export default function ProfilePage() {
         {/* ── Tab Navigation ──────────────────── */}
         <div className="flex items-center gap-1 mb-5">
           {[
-            { key: "following" as Tab, label: "关注主播", icon: "♥", count: follows.length },
-            { key: "favorites" as Tab, label: "收藏项目", icon: "★", count: favorites.length },
+            { key: "following" as Tab, label: "关注", icon: "♥", count: follows.length },
+            { key: "followers" as Tab, label: "粉丝", icon: "◉", count: followers.length },
+            { key: "favorites" as Tab, label: "收藏", icon: "★", count: favorites.length },
             { key: "achievements" as Tab, label: "成就徽章", icon: "◆", count: ACHIEVEMENTS.filter(a => a.unlocked).length },
           ].map((tab) => (
             <button
@@ -210,6 +213,40 @@ export default function ProfilePage() {
                   </div>
                   <span className="font-[family-name:var(--font-pixel)] text-[7px] text-text-secondary shrink-0">
                     {f.profiles?.followers_count || 0} 粉丝
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* ── Followers ──────────────────────── */}
+        {activeTab === "followers" && (
+          <div className="space-y-2">
+            {followers.length === 0 ? (
+              <EmptyState text="还没有人关注你" />
+            ) : (
+              followers.map((f) => (
+                <div key={f.id} className="pixel-border bg-bg-card p-3 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-bg-surface border border-border-pixel shrink-0 overflow-hidden">
+                    {f.profiles?.avatar_url ? (
+                      <img src={f.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="flex items-center justify-center w-full h-full font-[family-name:var(--font-pixel)] text-[10px] text-accent-purple">
+                        {(f.profiles?.display_name || "?").charAt(0)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-semibold text-sm text-text-primary">
+                      {f.profiles?.display_name || "未知用户"}
+                    </span>
+                    <p className="text-[11px] text-text-secondary truncate">
+                      {f.profiles?.bio || ""}
+                    </p>
+                  </div>
+                  <span className="font-[family-name:var(--font-pixel)] text-[7px] text-text-secondary shrink-0">
+                    关注于 {new Date(f.created_at).toLocaleDateString("zh-CN")}
                   </span>
                 </div>
               ))
