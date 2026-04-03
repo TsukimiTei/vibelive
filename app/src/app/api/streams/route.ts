@@ -10,7 +10,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("live_streams")
-    .select("*, profiles:user_id(display_name, avatar_url, username, bio, followers_count)")
+    .select("*")
     .eq("status", "live")
     .order("started_at", { ascending: false });
 

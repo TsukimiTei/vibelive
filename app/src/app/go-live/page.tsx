@@ -5,11 +5,18 @@ import {
   Room,
   RoomEvent,
   Track,
-  VideoPresets,
+  ScreenSharePresets,
 } from "livekit-client";
 import Link from "next/link";
 
 type BroadcastState = "idle" | "connecting" | "live" | "error";
+type QualityLevel = "720p" | "1080p" | "original";
+
+const QUALITY_MAP = {
+  "720p": ScreenSharePresets.h720fps30,
+  "1080p": ScreenSharePresets.h1080fps30,
+  "original": ScreenSharePresets.original,
+};
 
 const STORAGE_KEY = "vibelive_active_stream";
 
@@ -17,20 +24,30 @@ interface ActiveStream {
   roomName: string;
   identity: string;
   startedAt: number;
+  quality?: QualityLevel;
 }
 
 export default function GoLivePage() {
   const [roomName, setRoomName] = useState("");
   const [identity, setIdentity] = useState("");
+  const [quality, setQuality] = useState<QualityLevel>("1080p");
   const [state, setState] = useState<BroadcastState>("idle");
   const [error, setError] = useState("");
   const [viewers, setViewers] = useState(0);
   const [elapsed, setElapsed] = useState(0);
 
   const roomRef = useRef<Room | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startedAtRef = useRef<number>(0);
+
+  // Callback ref: attaches screen share track as soon as the video element mounts
+  const videoCallbackRef = useCallback((el: HTMLVideoElement | null) => {
+    if (!el || !roomRef.current) return;
+    const screenPub = roomRef.current.localParticipant.getTrackPublication(Track.Source.ScreenShare);
+    if (screenPub?.track) {
+      screenPub.track.attach(el);
+    }
+  }, [state]); // re-run when state changes so it fires on mount
 
   // Check for active stream on mount
   useEffect(() => {
@@ -41,78 +58,12 @@ export default function GoLivePage() {
         setRoomName(active.roomName);
         setIdentity(active.identity);
         startedAtRef.current = active.startedAt;
-        // Auto-reconnect
         reconnect(active);
       } catch {
         localStorage.removeItem(STORAGE_KEY);
       }
     }
   }, []);
-
-  const reconnect = async (active: ActiveStream) => {
-    setState("connecting");
-    setError("");
-
-    try {
-      const res = await fetch("/api/livekit/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          room: active.roomName,
-          identity: active.identity,
-          isPublisher: true,
-        }),
-      });
-
-      if (!res.ok) throw new Error("获取 token 失败");
-
-      const { token } = await res.json();
-      const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL;
-      if (!livekitUrl) throw new Error("未配置 NEXT_PUBLIC_LIVEKIT_URL");
-
-      const room = new Room({
-        videoCaptureDefaults: { resolution: VideoPresets.h1080.resolution },
-        adaptiveStream: true,
-        dynacast: true,
-      });
-
-      setupRoomEvents(room);
-      await room.connect(livekitUrl, token);
-      roomRef.current = room;
-
-      // Re-enable screen share
-      room.localParticipant.on("localTrackPublished", (pub) => {
-        if (pub.source === Track.Source.ScreenShare && pub.track && videoRef.current) {
-          pub.track.attach(videoRef.current);
-        }
-      });
-      room.localParticipant.on("localTrackUnpublished", (pub) => {
-        if (pub.source === Track.Source.ScreenShare) {
-          stopBroadcast();
-        }
-      });
-
-      await room.localParticipant.setScreenShareEnabled(true, {
-        audio: true,
-        contentHint: "detail",
-        resolution: VideoPresets.h1080.resolution,
-      });
-
-      const screenPub = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
-      if (screenPub?.track && videoRef.current) {
-        screenPub.track.attach(videoRef.current);
-      }
-
-      setState("live");
-      setViewers(room.remoteParticipants.size);
-      startTimer(active.startedAt);
-    } catch {
-      // Reconnect failed — stream is probably gone
-      localStorage.removeItem(STORAGE_KEY);
-      setState("idle");
-      setError("之前的直播已断开，请重新开播");
-    }
-  };
 
   const setupRoomEvents = (room: Room) => {
     room.on(RoomEvent.ParticipantConnected, () => {
@@ -135,6 +86,66 @@ export default function GoLivePage() {
     setElapsed(Math.floor((Date.now() - startedAt) / 1000));
   };
 
+  const connectAndShare = async (roomName: string, identity: string, q: QualityLevel = "1080p"): Promise<Room> => {
+    const res = await fetch("/api/livekit/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ room: roomName, identity, isPublisher: true }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "获取 token 失败");
+    }
+
+    const { token } = await res.json();
+    const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL;
+    if (!livekitUrl) throw new Error("未配置 NEXT_PUBLIC_LIVEKIT_URL");
+
+    const preset = QUALITY_MAP[q];
+    const room = new Room({
+      adaptiveStream: true,
+      dynacast: true,
+    });
+
+    setupRoomEvents(room);
+
+    // Listen for track unpublished (user clicks browser's "Stop sharing")
+    room.localParticipant.on("localTrackUnpublished", (pub) => {
+      if (pub.source === Track.Source.ScreenShare) {
+        stopBroadcast();
+      }
+    });
+
+    await room.connect(livekitUrl, token);
+    roomRef.current = room;
+
+    await room.localParticipant.setScreenShareEnabled(true, {
+      audio: true,
+      contentHint: "detail",
+      resolution: preset.resolution,
+    });
+
+    return room;
+  };
+
+  const reconnect = async (active: ActiveStream) => {
+    setState("connecting");
+    setError("");
+
+    try {
+      setQuality(active.quality || "1080p");
+      const room = await connectAndShare(active.roomName, active.identity, active.quality || "1080p");
+      setState("live");
+      setViewers(room.remoteParticipants.size);
+      startTimer(active.startedAt);
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+      setState("idle");
+      setError("之前的直播已断开，请重新开播");
+    }
+  };
+
   const startBroadcast = useCallback(async () => {
     if (!roomName.trim() || !identity.trim()) {
       setError("请填写房间名和主播名");
@@ -145,62 +156,10 @@ export default function GoLivePage() {
     setError("");
 
     try {
-      const res = await fetch("/api/livekit/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          room: roomName.trim(),
-          identity: identity.trim(),
-          isPublisher: true,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "获取 token 失败");
-      }
-
-      const { token } = await res.json();
-      const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL;
-
-      if (!livekitUrl) {
-        throw new Error("未配置 NEXT_PUBLIC_LIVEKIT_URL");
-      }
-
-      const room = new Room({
-        videoCaptureDefaults: { resolution: VideoPresets.h1080.resolution },
-        adaptiveStream: true,
-        dynacast: true,
-      });
-
-      setupRoomEvents(room);
-      await room.connect(livekitUrl, token);
-      roomRef.current = room;
-
-      room.localParticipant.on("localTrackPublished", (pub) => {
-        if (pub.source === Track.Source.ScreenShare && pub.track && videoRef.current) {
-          pub.track.attach(videoRef.current);
-        }
-      });
-      room.localParticipant.on("localTrackUnpublished", (pub) => {
-        if (pub.source === Track.Source.ScreenShare) {
-          stopBroadcast();
-        }
-      });
-
-      await room.localParticipant.setScreenShareEnabled(true, {
-        audio: true,
-        contentHint: "detail",
-        resolution: VideoPresets.h1080.resolution,
-      });
-
-      const screenPub = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
-      if (screenPub?.track && videoRef.current) {
-        screenPub.track.attach(videoRef.current);
-      }
+      const room = await connectAndShare(roomName.trim(), identity.trim(), quality);
 
       // Register stream in database
-      await fetch("/api/streams", {
+      fetch("/api/streams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -208,16 +167,17 @@ export default function GoLivePage() {
           title: roomName.trim(),
           coding_tool: "other",
         }),
-      });
+      }).catch(() => {});
 
       // Save to localStorage for reconnect
       const now = Date.now();
       startedAtRef.current = now;
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ roomName: roomName.trim(), identity: identity.trim(), startedAt: now })
+        JSON.stringify({ roomName: roomName.trim(), identity: identity.trim(), startedAt: now, quality })
       );
 
+      // Set state to live — useEffect will attach the video track
       setState("live");
       setViewers(room.remoteParticipants.size);
       startTimer(now);
@@ -228,7 +188,6 @@ export default function GoLivePage() {
   }, [roomName, identity]);
 
   const stopBroadcast = useCallback(async () => {
-    // Remove from database
     if (roomName) {
       fetch("/api/streams", {
         method: "DELETE",
@@ -252,12 +211,9 @@ export default function GoLivePage() {
     setViewers(0);
   }, [roomName]);
 
-  // Cleanup on unmount — but DON'T disconnect (keep stream alive)
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      // Note: we intentionally do NOT disconnect the room here
-      // so the stream stays alive when navigating away
     };
   }, []);
 
@@ -321,6 +277,28 @@ export default function GoLivePage() {
                   className="w-full bg-bg-primary border-2 border-border-pixel px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent-purple focus:outline-none transition-colors"
                 />
               </div>
+
+              <div>
+                <label className="block text-xs text-text-secondary mb-1.5">
+                  画质
+                </label>
+                <div className="flex gap-2">
+                  {(["720p", "1080p", "original"] as QualityLevel[]).map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => setQuality(q)}
+                      className={`flex-1 py-2 text-xs font-[family-name:var(--font-pixel)] text-[8px] border-2 transition-colors ${
+                        quality === q
+                          ? "border-accent-cyan text-accent-cyan bg-accent-cyan/10"
+                          : "border-border-pixel text-text-secondary hover:border-text-secondary"
+                      }`}
+                    >
+                      {q === "original" ? "原画" : q}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {error && (
@@ -359,7 +337,7 @@ export default function GoLivePage() {
           <div className="space-y-4">
             <div className="relative pixel-border-live aspect-video bg-bg-primary overflow-hidden">
               <video
-                ref={videoRef}
+                ref={videoCallbackRef}
                 autoPlay
                 muted
                 playsInline
