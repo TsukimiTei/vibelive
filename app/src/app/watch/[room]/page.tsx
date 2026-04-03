@@ -778,6 +778,7 @@ function WatchLayout({
   identity: string;
   roomName: string;
 }) {
+  const { t } = useI18n();
   const [desktop, setDesktop] = useState(false);
   const { bursts, combo, showBanner, screenFlash, addReaction } = useReactionSystem();
 
@@ -880,14 +881,14 @@ export default function WatchPage({
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "获取 token 失败");
+        throw new Error(data.error || t('error.tokenFailed'));
       }
       const data = await res.json();
       setToken(data.token);
       setIdentity(viewerName);
       setJoined(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "加入失败");
+      setError(err instanceof Error ? err.message : t('error.joinFailed'));
       setLoading(false);
     }
   }, [roomName]);
@@ -927,7 +928,7 @@ export default function WatchPage({
         <div className="mx-auto max-w-[600px] px-4 py-12">
           <div className="flex items-center gap-3 mb-6">
             <Link href="/" className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary hover:text-accent-cyan transition-colors">
-              ◁ 返回大厅
+              ◁ {t('nav.backToHome')}
             </Link>
           </div>
           <div className="pixel-border bg-bg-card p-6 space-y-5">
@@ -944,7 +945,7 @@ export default function WatchPage({
                 value={identity}
                 onChange={(e) => setIdentity(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleJoin()}
-                placeholder="输入你的昵称"
+                placeholder={t('watch.enterNickname')}
                 className="w-full bg-bg-primary border-2 border-border-pixel px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent-cyan focus:outline-none transition-colors"
               />
             </div>
@@ -954,7 +955,7 @@ export default function WatchPage({
               </div>
             )}
             <button onClick={handleJoin} className="pixel-btn border-accent-cyan text-accent-cyan hover:bg-accent-cyan hover:text-bg-primary w-full text-[10px] py-3">
-              ▶ 进入直播间
+              ▶ {t('btn.enterStream')}
             </button>
           </div>
         </div>
@@ -982,19 +983,19 @@ export default function WatchPage({
         {/* Mobile panel toggle */}
         <div className="flex items-center gap-0.5 lg:hidden bg-bg-primary/60 rounded-sm p-0.5">
           {([
-            { key: "video" as const, icon: "▶", label: "画面" },
-            { key: "chat" as const, icon: "💬", label: "聊天" },
-          ]).map((t) => (
+            { key: "video" as const, icon: "▶", label: t('watch.tabVideo') },
+            { key: "chat" as const, icon: "💬", label: t('watch.tabChat') },
+          ]).map((tb) => (
             <button
-              key={t.key}
-              onClick={() => setMobilePanel(t.key)}
+              key={tb.key}
+              onClick={() => setMobilePanel(tb.key)}
               className={`px-2.5 py-1 text-[9px] font-[family-name:var(--font-pixel)] transition-all ${
-                mobilePanel === t.key
+                mobilePanel === tb.key
                   ? "bg-accent-cyan/15 text-accent-cyan shadow-[0_0_6px_var(--glow-cyan)]"
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
-              <span className="mr-1">{t.icon}</span>{t.label}
+              <span className="mr-1">{tb.icon}</span>{tb.label}
             </button>
           ))}
         </div>
