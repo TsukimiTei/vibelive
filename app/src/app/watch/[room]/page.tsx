@@ -12,6 +12,7 @@ import {
 } from "@livekit/components-react";
 import { Track, RoomEvent } from "livekit-client";
 import Link from "next/link";
+import { useNickname } from "@/lib/useNickname";
 
 // ── Types ────────────────────────────────────
 interface ChatMsg {
@@ -190,8 +191,8 @@ function PlayerControls({
           )}
         </div>
 
-        {/* Theater mode */}
-        <button onClick={toggleTheater} className="text-white hover:text-accent-cyan transition-colors" title={layoutMode === "theater" ? "默认模式" : "剧院模式"}>
+        {/* Theater mode (desktop only) */}
+        <button onClick={toggleTheater} className="hidden lg:block text-white hover:text-accent-cyan transition-colors" title={layoutMode === "theater" ? "默认模式" : "剧院模式"}>
           {layoutMode === "theater" ? (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm0 8H5V9h14v6z"/></svg>
           ) : (
@@ -258,7 +259,6 @@ function VideoArea({
   return (
     <div className="relative w-full h-full bg-bg-primary group" ref={videoContainerRef}>
       <VideoTrack trackRef={screenTrack} className="w-full h-full object-contain" />
-      <div className="scanline-overlay absolute inset-0 pointer-events-none" />
 
       {/* HUD */}
       <div className="absolute top-3 left-3 z-20 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -278,24 +278,64 @@ function VideoArea({
 }
 
 // ── Sidebar (Chat / Info / Users tabs) ───────
+const STAGES = ["构思中", "设计中", "编码中", "调试中", "测试中", "发布中", "已完成"];
+
 function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: string }) {
   const room = useRoomContext();
   const participants = useParticipants();
   const [tab, setTab] = useState<"chat" | "info" | "users">("chat");
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const chatStorageKey = `vibelive-chat-${roomName}`;
+  const [messages, setMessages] = useState<ChatMsg[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = localStorage.getItem(chatStorageKey);
+      if (!raw) return [];
+      const saved: ChatMsg[] = JSON.parse(raw);
+      const cutoff = Date.now() - CHAT_TTL_MS;
+      return saved.filter((m) => m.time > cutoff).slice(-200);
+    } catch {
+      return [];
+    }
+  });
   const [input, setInput] = useState("");
   const [reactions, setReactions] = useState<Record<ReactionKind, number>>({
     want_to_use: 0, interesting: 0, looking_forward: 0,
   });
   const [bursts, setBursts] = useState<ReactionBurst[]>([]);
   const [streamInfo, setStreamInfo] = useState<{
-    project_name?: string; description?: string; stage?: string; streamer_name?: string; started_at?: string;
+    project_name?: string; description?: string; stage?: string; streamer_name?: string; started_at?: string; user_id?: string;
   } | null>(null);
+  const [isStreamer, setIsStreamer] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
-  // Fetch stream info
+  // Debounced save for streamer editing
+  const saveField = useCallback(
+    (fields: Record<string, string>) => {
+      if (!isStreamer) return;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(async () => {
+        setSaving(true);
+        await fetch("/api/streams", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ room_name: decodeURIComponent(roomName), ...fields }),
+        }).catch(() => {});
+        setSaving(false);
+      }, 600);
+    },
+    [roomName, isStreamer]
+  );
+
+  const updateField = (key: string, value: string) => {
+    setStreamInfo((prev) => (prev ? { ...prev, [key]: value } : prev));
+    saveField({ [key]: value });
+  };
+
+  // Fetch stream info + check if current user is the streamer
   useEffect(() => {
     const fetchInfo = async () => {
       try {
@@ -303,7 +343,18 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
         if (res.ok) {
           const { streams } = await res.json();
           const match = streams.find((s: { room_name: string }) => s.room_name === decodeURIComponent(roomName));
-          if (match) setStreamInfo(match);
+          if (match) {
+            setStreamInfo(match);
+            // Check ownership via Supabase
+            if (match.user_id) {
+              const { createClient } = await import("@/lib/supabase/client");
+              const supabase = createClient();
+              if (supabase) {
+                const { data } = await supabase.auth.getUser();
+                setIsStreamer(data.user?.id === match.user_id);
+              }
+            }
+          }
         }
       } catch {}
     };
@@ -335,6 +386,15 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
     room.on(RoomEvent.DataReceived, handleData);
     return () => { room.off(RoomEvent.DataReceived, handleData); };
   }, [room]);
+
+  // Persist messages to localStorage (keep only last 10 min)
+  useEffect(() => {
+    const cutoff = Date.now() - CHAT_TTL_MS;
+    const fresh = messages.filter((m) => m.time > cutoff);
+    try {
+      localStorage.setItem(chatStorageKey, JSON.stringify(fresh.slice(-200)));
+    } catch {}
+  }, [messages, chatStorageKey]);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -447,26 +507,82 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
           {streamInfo ? (
             <>
+              {/* Streamer badge */}
+              {isStreamer && (
+                <div className="flex items-center gap-2">
+                  <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-green bg-accent-green/10 border border-accent-green/30 px-2 py-0.5">
+                    主播模式 · 可编辑
+                  </span>
+                  {saving && (
+                    <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-yellow animate-pulse ml-auto">保存中...</span>
+                  )}
+                </div>
+              )}
+
+              {/* Project name */}
               <div>
                 <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">项目名称</span>
-                <p className="text-sm text-text-primary mt-1">
-                  {streamInfo.project_name || <span className="text-text-secondary/40">未设置</span>}
-                </p>
+                {isStreamer ? (
+                  <input
+                    type="text"
+                    value={streamInfo.project_name || ""}
+                    onChange={(e) => updateField("project_name", e.target.value)}
+                    placeholder="你正在做什么项目？"
+                    className="w-full mt-1 bg-bg-primary border border-border-pixel px-2 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/30 focus:border-accent-purple focus:outline-none transition-colors"
+                  />
+                ) : (
+                  <p className="text-sm text-text-primary mt-1">
+                    {streamInfo.project_name || <span className="text-text-secondary/40">未设置</span>}
+                  </p>
+                )}
               </div>
+
+              {/* Stage */}
               <div>
                 <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">当前阶段</span>
-                <p className="mt-1">
-                  <span className="px-2 py-0.5 text-xs border border-accent-cyan/40 text-accent-cyan bg-accent-cyan/10">
-                    {streamInfo.stage || "构思中"}
-                  </span>
-                </p>
+                {isStreamer ? (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {STAGES.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => updateField("stage", s)}
+                        className={`px-1.5 py-0.5 text-[10px] border transition-colors ${
+                          streamInfo.stage === s
+                            ? "border-accent-cyan text-accent-cyan bg-accent-cyan/10"
+                            : "border-border-pixel text-text-secondary hover:border-text-secondary"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-1">
+                    <span className="px-2 py-0.5 text-xs border border-accent-cyan/40 text-accent-cyan bg-accent-cyan/10">
+                      {streamInfo.stage || "构思中"}
+                    </span>
+                  </p>
+                )}
               </div>
+
+              {/* Description */}
               <div>
                 <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">项目描述</span>
-                <p className="text-xs text-text-primary/80 mt-1 leading-relaxed whitespace-pre-wrap">
-                  {streamInfo.description || <span className="text-text-secondary/40">主播还没写描述</span>}
-                </p>
+                {isStreamer ? (
+                  <textarea
+                    value={streamInfo.description || ""}
+                    onChange={(e) => updateField("description", e.target.value)}
+                    placeholder="简单介绍一下你的项目..."
+                    rows={4}
+                    className="w-full mt-1 bg-bg-primary border border-border-pixel px-2 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/30 focus:border-accent-purple focus:outline-none transition-colors resize-none"
+                  />
+                ) : (
+                  <p className="text-xs text-text-primary/80 mt-1 leading-relaxed whitespace-pre-wrap">
+                    {streamInfo.description || <span className="text-text-secondary/40">主播还没写描述</span>}
+                  </p>
+                )}
               </div>
+
               <div className="border-t border-border-pixel/30 pt-3">
                 <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">主播</span>
                 <p className="text-sm text-accent-purple mt-1">{streamInfo.streamer_name}</p>
@@ -509,6 +625,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
 
 // ── Constants ────────────────────────────────
 const NICKNAME_KEY = "vibelive-nickname";
+const CHAT_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 // ── Main Page ────────────────────────────────
 export default function WatchPage({
@@ -517,12 +634,14 @@ export default function WatchPage({
   params: Promise<{ room: string }>;
 }) {
   const { room: roomName } = use(params);
+  const { nickname: profileName } = useNickname();
   const [token, setToken] = useState<string | null>(null);
   const [identity, setIdentity] = useState("");
   const [joined, setJoined] = useState(false);
   const [error, setError] = useState("");
-  const [checkingNickname, setCheckingNickname] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("theater");
+  const [mobilePanel, setMobilePanel] = useState<"video" | "chat">("video");
 
   const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL;
 
@@ -543,32 +662,34 @@ export default function WatchPage({
         throw new Error(data.error || "获取 token 失败");
       }
       const data = await res.json();
-      localStorage.setItem(NICKNAME_KEY, viewerName);
       setToken(data.token);
       setIdentity(viewerName);
       setJoined(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "加入失败");
-      setCheckingNickname(false);
+      setLoading(false);
     }
   }, [roomName]);
 
+  // Auto-join when profile nickname is resolved
   useEffect(() => {
-    const saved = localStorage.getItem(NICKNAME_KEY);
-    if (saved) {
-      setIdentity(saved);
-      joinWithName(saved);
+    if (profileName === null) return; // still loading
+    if (joined) return;
+    if (profileName) {
+      // Logged in — auto-join with profile name
+      joinWithName(profileName);
     } else {
-      setCheckingNickname(false);
+      // Not logged in — show nickname input
+      setLoading(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [profileName]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleJoin = useCallback(() => {
     joinWithName(identity);
   }, [identity, joinWithName]);
 
   // Loading
-  if (checkingNickname && !joined) {
+  if (loading && !joined) {
     return (
       <div className="ambient-gradient min-h-screen flex items-center justify-center">
         <span className="font-[family-name:var(--font-pixel)] text-[11px] text-accent-cyan animate-pulse">
@@ -626,22 +747,42 @@ export default function WatchPage({
   return (
     <div className="ambient-gradient h-screen flex flex-col" data-player-root>
       {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-2 hud-panel shrink-0">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary hover:text-accent-cyan transition-colors">
-            ◁ 返回大厅
+      <div className="flex items-center justify-between px-2 sm:px-4 py-2 hud-panel shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <Link href="/" className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary hover:text-accent-cyan transition-colors shrink-0">
+            ◁ 返回
           </Link>
-          <span className="text-border-pixel">│</span>
-          <span className="font-[family-name:var(--font-pixel)] text-[12px] text-text-primary">
+          <span className="text-border-pixel hidden sm:inline">│</span>
+          <span className="font-[family-name:var(--font-pixel)] text-[10px] sm:text-[12px] text-text-primary truncate">
             {decodeURIComponent(roomName)}
           </span>
+        </div>
+
+        {/* Mobile panel toggle */}
+        <div className="flex items-center gap-1 lg:hidden">
+          <button
+            onClick={() => setMobilePanel("video")}
+            className={`px-2 py-1 text-[9px] font-[family-name:var(--font-pixel)] border transition-colors ${
+              mobilePanel === "video" ? "border-accent-cyan text-accent-cyan" : "border-border-pixel text-text-secondary"
+            }`}
+          >
+            画面
+          </button>
+          <button
+            onClick={() => setMobilePanel("chat")}
+            className={`px-2 py-1 text-[9px] font-[family-name:var(--font-pixel)] border transition-colors ${
+              mobilePanel === "chat" ? "border-accent-cyan text-accent-cyan" : "border-border-pixel text-text-secondary"
+            }`}
+          >
+            聊天
+          </button>
         </div>
       </div>
 
       <LiveKitRoom serverUrl={livekitUrl} token={token!} connect={true}>
+        {/* ── Desktop layout ── */}
         {isTheater ? (
-          /* Theater: video left, chat right */
-          <div className="flex flex-1 min-h-0">
+          <div className="hidden lg:flex flex-1 min-h-0">
             <div className="flex-1 min-w-0 pixel-border-live m-2 mr-0 overflow-hidden">
               <VideoArea layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
             </div>
@@ -650,8 +791,7 @@ export default function WatchPage({
             </div>
           </div>
         ) : (
-          /* Default: video top with max width, chat below */
-          <div className="flex-1 overflow-y-auto">
+          <div className="hidden lg:block flex-1 overflow-y-auto">
             <div className="mx-auto max-w-[960px] px-4 py-3 space-y-3">
               <div className="pixel-border-live aspect-video overflow-hidden">
                 <VideoArea layoutMode={layoutMode} onLayoutChange={setLayoutMode} />
@@ -662,6 +802,34 @@ export default function WatchPage({
             </div>
           </div>
         )}
+
+        {/* ── Mobile layout ── */}
+        <div className="flex flex-col flex-1 min-h-0 lg:hidden">
+          {mobilePanel === "video" ? (
+            <div className="flex flex-col flex-1 min-h-0">
+              <div className="pixel-border-live m-1 aspect-video overflow-hidden shrink-0">
+                <VideoArea layoutMode="default" onLayoutChange={setLayoutMode} />
+              </div>
+              {/* Mini reaction bar below video on mobile */}
+              <div className="px-2 py-1 flex items-center gap-2">
+                <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary truncate flex-1">
+                  {decodeURIComponent(roomName)}
+                </span>
+                <button
+                  onClick={() => setMobilePanel("chat")}
+                  className="px-2 py-1 text-[9px] border border-accent-cyan text-accent-cyan font-[family-name:var(--font-pixel)]"
+                >
+                  💬 聊天
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 min-h-0 m-1">
+              <Sidebar viewerName={identity} roomName={roomName} />
+            </div>
+          )}
+        </div>
+
         <RoomAudioRenderer />
       </LiveKitRoom>
 

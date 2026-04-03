@@ -6,16 +6,19 @@ import {
   RoomEvent,
   Track,
   ScreenSharePresets,
+  VideoPreset,
 } from "livekit-client";
 import Link from "next/link";
+import { useNickname } from "@/lib/useNickname";
 
 type BroadcastState = "idle" | "connecting" | "live" | "error";
-type QualityLevel = "720p" | "1080p" | "original";
+type QualityLevel = "720p" | "1080p" | "original" | "ultra";
 
-const QUALITY_MAP = {
-  "720p": ScreenSharePresets.h720fps30,
-  "1080p": ScreenSharePresets.h1080fps30,
-  "original": ScreenSharePresets.original,
+const QUALITY_MAP: Record<QualityLevel, { preset: VideoPreset; label: string }> = {
+  "720p":     { preset: ScreenSharePresets.h720fps30,  label: "720p" },
+  "1080p":    { preset: ScreenSharePresets.h1080fps30, label: "1080p" },
+  "original": { preset: ScreenSharePresets.original,   label: "原画" },
+  "ultra":    { preset: new VideoPreset(0, 0, 15_000_000, 30, "high"), label: "超清" },
 };
 
 const STORAGE_KEY = "vibelive_active_stream";
@@ -28,9 +31,9 @@ interface ActiveStream {
 }
 
 export default function GoLivePage() {
+  const { nickname } = useNickname();
   const [roomName, setRoomName] = useState("");
-  const [identity, setIdentity] = useState("");
-  const [quality, setQuality] = useState<QualityLevel>("1080p");
+  const [quality, setQuality] = useState<QualityLevel>("ultra");
   const [state, setState] = useState<BroadcastState>("idle");
   const [error, setError] = useState("");
   const [viewers, setViewers] = useState(0);
@@ -63,7 +66,6 @@ export default function GoLivePage() {
       try {
         const active: ActiveStream = JSON.parse(saved);
         setRoomName(active.roomName);
-        setIdentity(active.identity);
         startedAtRef.current = active.startedAt;
         reconnect(active);
       } catch {
@@ -109,7 +111,7 @@ export default function GoLivePage() {
     const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL;
     if (!livekitUrl) throw new Error("未配置 NEXT_PUBLIC_LIVEKIT_URL");
 
-    const preset = QUALITY_MAP[q];
+    const { preset } = QUALITY_MAP[q];
     const room = new Room({
       adaptiveStream: true,
       dynacast: true,
@@ -131,6 +133,8 @@ export default function GoLivePage() {
       audio: true,
       contentHint: "detail",
       resolution: preset.resolution,
+    }, {
+      screenShareEncoding: preset.encoding,
     });
 
     return room;
@@ -142,7 +146,7 @@ export default function GoLivePage() {
 
     try {
       setQuality(active.quality || "1080p");
-      const room = await connectAndShare(active.roomName, active.identity, active.quality || "1080p");
+      const room = await connectAndShare(active.roomName, nickname || "主播", active.quality || "1080p");
       setState("live");
       setViewers(room.remoteParticipants.size);
       startTimer(active.startedAt);
@@ -154,8 +158,8 @@ export default function GoLivePage() {
   };
 
   const startBroadcast = useCallback(async () => {
-    if (!roomName.trim() || !identity.trim()) {
-      setError("请填写房间名和主播名");
+    if (!roomName.trim()) {
+      setError("请填写房间名");
       return;
     }
 
@@ -163,7 +167,8 @@ export default function GoLivePage() {
     setError("");
 
     try {
-      const room = await connectAndShare(roomName.trim(), identity.trim(), quality);
+      const name = nickname || "主播";
+      const room = await connectAndShare(roomName.trim(), name, quality);
 
       // Register stream in database
       fetch("/api/streams", {
@@ -181,7 +186,7 @@ export default function GoLivePage() {
       startedAtRef.current = now;
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ roomName: roomName.trim(), identity: identity.trim(), startedAt: now, quality })
+        JSON.stringify({ roomName: roomName.trim(), identity: name, startedAt: now, quality })
       );
 
       // Set state to live — useEffect will attach the video track
@@ -192,7 +197,7 @@ export default function GoLivePage() {
       setState("error");
       setError(err instanceof Error ? err.message : "连接失败");
     }
-  }, [roomName, identity]);
+  }, [roomName, nickname]);
 
   const stopBroadcast = useCallback(async () => {
     if (roomName) {
@@ -305,25 +310,19 @@ export default function GoLivePage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs text-text-secondary mb-1.5">
-                  主播名
-                </label>
-                <input
-                  type="text"
-                  value={identity}
-                  onChange={(e) => setIdentity(e.target.value)}
-                  placeholder="你的显示名称"
-                  className="w-full bg-bg-primary border-2 border-border-pixel px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent-purple focus:outline-none transition-colors"
-                />
-              </div>
+              {nickname && (
+                <div className="flex items-center gap-2 px-1">
+                  <span className="text-xs text-text-secondary">主播:</span>
+                  <span className="text-xs text-accent-cyan">{nickname}</span>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs text-text-secondary mb-1.5">
                   画质
                 </label>
                 <div className="flex gap-2">
-                  {(["720p", "1080p", "original"] as QualityLevel[]).map((q) => (
+                  {(Object.entries(QUALITY_MAP) as [QualityLevel, { preset: VideoPreset; label: string }][]).map(([q, { label }]) => (
                     <button
                       key={q}
                       type="button"
@@ -334,7 +333,7 @@ export default function GoLivePage() {
                           : "border-border-pixel text-text-secondary hover:border-text-secondary"
                       }`}
                     >
-                      {q === "original" ? "原画" : q}
+                      {label}
                     </button>
                   ))}
                 </div>
@@ -383,7 +382,6 @@ export default function GoLivePage() {
                 playsInline
                 className="w-full h-full object-contain"
               />
-              <div className="scanline-overlay absolute inset-0 pointer-events-none" />
 
               <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
                 <span className="viewer-badge text-[9px]">
