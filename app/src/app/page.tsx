@@ -17,6 +17,7 @@ interface Filters {
 interface RealStream {
   id: string;
   room_name: string;
+  user_id: string;
   streamer_name: string;
   title: string;
   coding_tool: string;
@@ -39,8 +40,9 @@ export default function HomePage() {
     sortBy: "viewers",
   });
   const [realStreams, setRealStreams] = useState<RealStream[]>([]);
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
 
-  // Fetch real live streams
+  // Fetch real live streams + following list
   useEffect(() => {
     const fetchStreams = async () => {
       try {
@@ -52,11 +54,25 @@ export default function HomePage() {
       } catch {}
     };
 
+    const fetchFollows = async () => {
+      try {
+        const res = await fetch("/api/follows");
+        if (res.ok) {
+          const { follows } = await res.json();
+          if (follows?.length) {
+            setFollowingIds(new Set(follows.map((f: { profiles?: { id: string } }) => f.profiles?.id).filter(Boolean)));
+          }
+        }
+      } catch {}
+    };
+
     fetchStreams();
-    // Poll every 10 seconds
+    fetchFollows();
     const interval = setInterval(fetchStreams, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  const followingLive = realStreams.filter((s) => followingIds.has(s.user_id));
 
   const filteredStreams = useMemo(() => {
     let streams = [...MOCK_STREAMS];
@@ -120,6 +136,24 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+
+        {/* ── Following Live ────────────────── */}
+        {followingLive.length > 0 && (
+          <>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="font-[family-name:var(--font-pixel)] text-[10px] text-accent-pink glow-pink">
+                ♥ 关注的人正在直播
+              </span>
+              <span className="live-dot inline-block w-2 h-2 rounded-full bg-accent-pink" />
+              <div className="flex-1 h-px bg-gradient-to-r from-accent-pink/40 to-transparent" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+              {followingLive.map((stream) => (
+                <LiveStreamCard key={`fol-${stream.id}`} stream={stream} />
+              ))}
+            </div>
+          </>
+        )}
 
         {/* ── Real Live Streams ─────────────── */}
         {realStreams.length > 0 && (

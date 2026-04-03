@@ -71,14 +71,16 @@ export default function GoLivePage() {
     });
   }, [router]);
 
-  // Callback ref: attaches screen share track as soon as the video element mounts
+  // Callback ref: attaches screen share track when the video element mounts.
+  // Depends on `state` so React re-calls the ref when transitioning to "live".
   const videoCallbackRef = useCallback((el: HTMLVideoElement | null) => {
     if (!el || !roomRef.current) return;
     const screenPub = roomRef.current.localParticipant.getTrackPublication(Track.Source.ScreenShare);
     if (screenPub?.track) {
       screenPub.track.attach(el);
     }
-  }, [state]); // re-run when state changes so it fires on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
 
   // Check for active stream on mount
   useEffect(() => {

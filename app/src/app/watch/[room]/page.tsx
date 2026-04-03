@@ -383,20 +383,22 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
     return () => clearInterval(interval);
   }, [roomName]);
 
-  // Data channel messages
+  // Data channel messages — skip messages from self (already added locally in sendChat/sendReaction)
   useEffect(() => {
-    const handleData = (payload: Uint8Array) => {
+    const handleData = (payload: Uint8Array, participant?: { identity: string }) => {
+      if (participant?.identity === room.localParticipant.identity) return;
       try {
         const msg = JSON.parse(textDecoder.decode(payload));
         if (msg.type === "chat") {
           setMessages((prev) => [
             ...prev.slice(-200),
-            { id: `${Date.now()}-${Math.random()}`, user: msg.user, text: msg.text, time: Date.now() },
+            { id: `${Date.now()}-${Math.random()}`, user: msg.user, text: String(msg.text).slice(0, 500), time: Date.now() },
           ]);
         } else if (msg.type === "reaction") {
           const kind = msg.kind as ReactionKind;
+          if (!REACTION_CONFIG[kind]) return;
           setReactions((prev) => ({ ...prev, [kind]: (prev[kind] || 0) + 1 }));
-          const icon = REACTION_CONFIG[kind]?.icon || "❤️";
+          const icon = REACTION_CONFIG[kind].icon;
           const id = `${Date.now()}-${Math.random()}`;
           setBursts((prev) => [...prev, { id, kind: icon, x: 20 + Math.random() * 60 }]);
           setTimeout(() => setBursts((prev) => prev.filter((b) => b.id !== id)), 2000);
