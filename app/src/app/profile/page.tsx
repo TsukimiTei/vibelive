@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-type Tab = "following" | "followers" | "favorites" | "achievements";
+type Tab = "streams" | "following" | "followers" | "favorites" | "achievements";
 
 interface FollowEntry {
   id: string;
@@ -28,6 +28,18 @@ interface FavoriteEntry {
   created_at: string;
 }
 
+interface StreamEntry {
+  id: string;
+  room_name: string;
+  title: string;
+  project_name: string;
+  coding_tool: string;
+  status: string;
+  thumbnail_url: string;
+  started_at: string;
+  ended_at: string | null;
+}
+
 interface Profile {
   display_name: string;
   username: string;
@@ -48,8 +60,9 @@ const ACHIEVEMENTS = [
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Tab>("following");
+  const [activeTab, setActiveTab] = useState<Tab>("streams");
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [streams, setStreams] = useState<StreamEntry[]>([]);
   const [follows, setFollows] = useState<FollowEntry[]>([]);
   const [followers, setFollowers] = useState<FollowEntry[]>([]);
   const [favorites, setFavorites] = useState<FavoriteEntry[]>([]);
@@ -75,6 +88,9 @@ export default function ProfilePage() {
         .eq("id", user.id)
         .single();
       if (profileData) setProfile(profileData);
+
+      // Fetch streams history
+      fetch("/api/streams?history=true").then(r => r.json()).then(d => setStreams(d.streams || [])).catch(() => {});
 
       // Fetch follows + followers
       fetch("/api/follows").then(r => r.json()).then(d => setFollows(d.follows || [])).catch(() => {});
@@ -143,10 +159,10 @@ export default function ProfilePage() {
               {/* Stats */}
               <div className="grid grid-cols-2 gap-3 shrink-0">
                 {[
+                  { label: "直播", value: streams.length, color: "text-accent-green" },
                   { label: "关注", value: follows.length, color: "text-accent-pink" },
                   { label: "粉丝", value: followers.length, color: "text-accent-cyan" },
                   { label: "收藏", value: favorites.length, color: "text-accent-yellow" },
-                  { label: "成就", value: ACHIEVEMENTS.filter(a => a.unlocked).length, color: "text-accent-green" },
                 ].map((stat) => (
                   <div key={stat.label} className="pixel-border bg-bg-primary/50 p-2 text-center min-w-[80px]">
                     <p className={`font-[family-name:var(--font-pixel)] text-sm ${stat.color}`}>
@@ -165,6 +181,7 @@ export default function ProfilePage() {
         {/* ── Tab Navigation ──────────────────── */}
         <div className="flex items-center gap-1 mb-5">
           {[
+            { key: "streams" as Tab, label: "我的直播", icon: "▶", count: streams.length },
             { key: "following" as Tab, label: "关注", icon: "♥", count: follows.length },
             { key: "followers" as Tab, label: "粉丝", icon: "◉", count: followers.length },
             { key: "favorites" as Tab, label: "收藏", icon: "★", count: favorites.length },
@@ -185,6 +202,67 @@ export default function ProfilePage() {
             </button>
           ))}
         </div>
+
+        {/* ── Streams ──────────────────────── */}
+        {activeTab === "streams" && (
+          <div className="space-y-2">
+            {streams.length === 0 ? (
+              <EmptyState text="还没有直播记录" />
+            ) : (
+              streams.map((s) => {
+                const isLive = s.status === "live";
+                const duration = s.ended_at && s.started_at
+                  ? Math.floor((new Date(s.ended_at).getTime() - new Date(s.started_at).getTime()) / 1000)
+                  : null;
+                const formatDuration = (sec: number) => {
+                  const h = Math.floor(sec / 3600);
+                  const m = Math.floor((sec % 3600) / 60);
+                  return h > 0 ? `${h}小时${m}分钟` : `${m}分钟`;
+                };
+                return (
+                  <Link key={s.id} href={isLive ? `/watch/${s.room_name}` : "#"} className={`block ${isLive ? "group" : ""}`}>
+                    <div className={`pixel-border bg-bg-card p-3 flex items-center gap-3 ${isLive ? "card-glow" : ""}`}>
+                      {/* Thumbnail */}
+                      <div className="w-20 h-12 bg-bg-surface border border-border-pixel shrink-0 overflow-hidden">
+                        {s.thumbnail_url ? (
+                          <img src={s.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="flex items-center justify-center w-full h-full font-[family-name:var(--font-pixel)] text-[10px] text-text-secondary/30">
+                            📺
+                          </span>
+                        )}
+                      </div>
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-[family-name:var(--font-pixel)] text-[10px] ${isLive ? "text-accent-cyan group-hover:text-accent-green" : "text-text-primary"} transition-colors`}>
+                            {s.project_name || s.title || s.room_name}
+                          </span>
+                          {isLive && (
+                            <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-green bg-accent-green/10 border border-accent-green/30 px-1.5 py-0.5">
+                              LIVE
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-text-secondary truncate mt-0.5">
+                          {s.coding_tool !== "other" ? s.coding_tool + " · " : ""}
+                          {new Date(s.started_at).toLocaleDateString("zh-CN")}
+                          {duration !== null && ` · ${formatDuration(duration)}`}
+                        </p>
+                      </div>
+                      {/* Status */}
+                      <span className={`font-[family-name:var(--font-pixel)] text-[7px] shrink-0 ${
+                        isLive ? "text-accent-green" : "text-text-secondary/50"
+                      }`}>
+                        {isLive ? "直播中" : "已结束"}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })
+            )}
+          </div>
+        )}
 
         {/* ── Following ─────────────────────── */}
         {activeTab === "following" && (

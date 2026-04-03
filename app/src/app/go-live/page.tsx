@@ -48,6 +48,8 @@ export default function GoLivePage() {
   const [projectName, setProjectName] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
   const [projectStage, setProjectStage] = useState("构思中");
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -201,6 +203,7 @@ export default function GoLivePage() {
           room_name: roomName.trim(),
           title: roomName.trim(),
           coding_tool: codingTool,
+          thumbnail_url: thumbnailUrl,
         }),
       }).catch(() => {});
 
@@ -263,6 +266,32 @@ export default function GoLivePage() {
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
     return `${h > 0 ? `${h}:` : ""}${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  const uploadThumbnail = async (file: File) => {
+    setUploading(true);
+    try {
+      const supabase = createClient();
+      if (!supabase) throw new Error("未配置");
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `thumbnails/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("thumbnails").upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from("thumbnails").getPublicUrl(path);
+      setThumbnailUrl(publicUrl);
+      // If already live, save immediately
+      if (state === "live" && roomName) {
+        fetch("/api/streams", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ room_name: roomName.trim(), thumbnail_url: publicUrl }),
+        }).catch(() => {});
+      }
+    } catch {
+      setError("封面图上传失败");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const STAGES = ["构思中", "设计中", "编码中", "调试中", "测试中", "发布中", "已完成"];
@@ -406,6 +435,43 @@ export default function GoLivePage() {
                       {label}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Thumbnail */}
+              <div>
+                <label className="block text-xs text-text-secondary mb-1.5">
+                  封面图（可选）
+                </label>
+                <div className="flex items-center gap-3">
+                  {thumbnailUrl ? (
+                    <div className="relative w-24 h-14 border border-border-pixel overflow-hidden shrink-0 bg-bg-primary">
+                      <img src={thumbnailUrl} alt="封面" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => setThumbnailUrl("")}
+                        className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 text-white text-[8px] flex items-center justify-center hover:bg-accent-pink transition-colors"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer flex items-center gap-2 px-3 py-2 border-2 border-dashed border-border-pixel hover:border-accent-purple text-text-secondary hover:text-accent-purple transition-colors text-xs">
+                      <span>{uploading ? "上传中..." : "📷 选择图片"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploading}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadThumbnail(file);
+                        }}
+                      />
+                    </label>
+                  )}
+                  <span className="text-[10px] text-text-secondary/50">
+                    展示在大厅直播列表中
+                  </span>
                 </div>
               </div>
             </div>
@@ -554,6 +620,45 @@ export default function GoLivePage() {
                   rows={3}
                   className="w-full bg-bg-primary border border-border-pixel px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/30 focus:border-accent-purple focus:outline-none transition-colors resize-none"
                 />
+              </div>
+
+              {/* Thumbnail during live */}
+              <div>
+                <label className="block text-xs text-text-secondary mb-1">封面图</label>
+                <div className="flex items-center gap-3">
+                  {thumbnailUrl ? (
+                    <div className="relative w-24 h-14 border border-border-pixel overflow-hidden shrink-0 bg-bg-primary">
+                      <img src={thumbnailUrl} alt="封面" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => {
+                          setThumbnailUrl("");
+                          fetch("/api/streams", {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ room_name: roomName.trim(), thumbnail_url: "" }),
+                          }).catch(() => {});
+                        }}
+                        className="absolute top-0.5 right-0.5 w-4 h-4 bg-black/60 text-white text-[8px] flex items-center justify-center hover:bg-accent-pink transition-colors"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer flex items-center gap-2 px-3 py-2 border border-dashed border-border-pixel hover:border-accent-purple text-text-secondary hover:text-accent-purple transition-colors text-xs">
+                      <span>{uploading ? "上传中..." : "📷 上传封面"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploading}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadThumbnail(file);
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
             </div>
           </div>

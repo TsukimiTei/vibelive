@@ -2,13 +2,36 @@ import { NextRequest } from "next/server";
 import { RoomServiceClient } from "livekit-server-sdk";
 import { createClient } from "@/lib/supabase/server";
 
-// GET: 获取所有活跃直播
-export async function GET() {
+// GET: 获取活跃直播，或查询用户历史直播
+export async function GET(request: NextRequest) {
   const supabase = await createClient();
   if (!supabase) {
     return Response.json({ streams: [] });
   }
 
+  const userId = request.nextUrl.searchParams.get("user_id");
+  const history = request.nextUrl.searchParams.get("history");
+
+  // 查询某个用户的历史直播
+  if (userId || history) {
+    let targetUserId = userId;
+    if (history && !targetUserId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return Response.json({ streams: [] });
+      targetUserId = user.id;
+    }
+    const { data, error } = await supabase
+      .from("live_streams")
+      .select("*")
+      .eq("user_id", targetUserId!)
+      .order("started_at", { ascending: false })
+      .limit(50);
+
+    if (error) return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ streams: data ?? [] });
+  }
+
+  // 默认：获取所有活跃直播
   const { data, error } = await supabase
     .from("live_streams")
     .select("*")
@@ -34,44 +57,50 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "未登录" }, { status: 401 });
   }
 
-  let body: { room_name?: string; title?: string; coding_tool?: string };
+  let body: { room_name?: string; title?: string; coding_tool?: string; thumbnail_url?: string };
   try {
     body = await request.json();
   } catch {
     return Response.json({ error: "请求格式错误" }, { status: 400 });
   }
-  const { room_name, title, coding_tool } = body;
+  const { room_name, title, coding_tool, thumbnail_url } = body;
 
   if (!room_name || room_name.length > 60) {
     return Response.json({ error: "room_name 为必填项" }, { status: 400 });
   }
 
-  // Check if a stream with this room_name already belongs to a different user
+  // Check if this room_name is already live by another user
   const { data: existing } = await supabase
     .from("live_streams")
     .select("user_id")
     .eq("room_name", room_name)
+    .eq("status", "live")
     .maybeSingle();
 
   if (existing && existing.user_id !== user.id) {
     return Response.json({ error: "该房间名已被其他用户占用" }, { status: 409 });
   }
 
-  // Upsert: 如果已有记录则更新状态为 live
+  // End any existing live stream by this user (one live stream per user)
+  await supabase
+    .from("live_streams")
+    .update({ status: "ended", ended_at: new Date().toISOString() })
+    .eq("user_id", user.id)
+    .eq("status", "live");
+
+  // Insert new stream record
   const { data, error } = await supabase
     .from("live_streams")
-    .upsert(
-      {
-        room_name,
-        user_id: user.id,
-        streamer_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "匿名",
-        title: (title || "").slice(0, 200),
-        coding_tool: (coding_tool || "other").slice(0, 30),
-        status: "live",
-        started_at: new Date().toISOString(),
-      },
-      { onConflict: "room_name" }
-    )
+    .insert({
+      room_name,
+      user_id: user.id,
+      streamer_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "匿名",
+      title: (title || "").slice(0, 200),
+      coding_tool: (coding_tool || "other").slice(0, 30),
+      thumbnail_url: (thumbnail_url || "").slice(0, 500),
+      status: "live",
+      started_at: new Date().toISOString(),
+    })
     .select()
     .single();
 
@@ -82,7 +111,7 @@ export async function POST(request: NextRequest) {
   return Response.json({ stream: data });
 }
 
-// PATCH: 更新直播间项目信息
+// PATCH: 更新直播间项目信息（含封面图）
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
   if (!supabase) {
@@ -100,7 +129,7 @@ export async function PATCH(request: NextRequest) {
   } catch {
     return Response.json({ error: "请求格式错误" }, { status: 400 });
   }
-  const { room_name, project_name, description, stage, coding_tool } = patchBody;
+  const { room_name, project_name, description, stage, coding_tool, thumbnail_url } = patchBody;
 
   if (!room_name) {
     return Response.json({ error: "room_name 为必填项" }, { status: 400 });
@@ -111,12 +140,14 @@ export async function PATCH(request: NextRequest) {
   if (description !== undefined) updates.description = description.slice(0, 1000);
   if (stage !== undefined) updates.stage = stage.slice(0, 30);
   if (coding_tool !== undefined) updates.coding_tool = coding_tool.slice(0, 30);
+  if (thumbnail_url !== undefined) updates.thumbnail_url = thumbnail_url.slice(0, 500);
 
   const { data, error } = await supabase
     .from("live_streams")
     .update(updates)
     .eq("room_name", room_name)
     .eq("user_id", user.id)
+    .eq("status", "live")
     .select()
     .single();
 
@@ -127,7 +158,7 @@ export async function PATCH(request: NextRequest) {
   return Response.json({ stream: data });
 }
 
-// DELETE: 结束直播
+// DELETE: 结束直播（标记为 ended，保留历史记录）
 export async function DELETE(request: NextRequest) {
   const supabase = await createClient();
   if (!supabase) {
@@ -150,11 +181,13 @@ export async function DELETE(request: NextRequest) {
     return Response.json({ error: "room_name 为必填项" }, { status: 400 });
   }
 
+  // Mark as ended instead of deleting
   const { error } = await supabase
     .from("live_streams")
-    .delete()
+    .update({ status: "ended", ended_at: new Date().toISOString() })
     .eq("room_name", del_room_name)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .eq("status", "live");
 
   if (error) {
     return Response.json({ error: error.message }, { status: 500 });
