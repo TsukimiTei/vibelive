@@ -1,11 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { MOCK_STREAMS } from "@/lib/mock-data";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+
+interface Notification {
+  id: string;
+  type: "follow" | "stream_live" | "favorite";
+  actor_name: string;
+  actor_avatar: string;
+  target_id: string;
+  target_title: string;
+  read_at: string | null;
+  created_at: string;
+}
+
+const NOTIF_TYPE = {
+  follow: { icon: "♥", verb: "关注了你", color: "text-accent-pink" },
+  stream_live: { icon: "▶", verb: "开始直播", color: "text-accent-green" },
+  favorite: { icon: "★", verb: "收藏了你的直播", color: "text-accent-yellow" },
+};
+
+function timeAgo(ts: string) {
+  const diff = Date.now() - new Date(ts).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "刚刚";
+  if (mins < 60) return `${mins}分钟前`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}小时前`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}天前`;
+  return new Date(ts).toLocaleDateString("zh-CN");
+}
 
 export function Navbar() {
   const pathname = usePathname();
@@ -17,6 +46,10 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeRoom, setActiveRoom] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifLoaded, setNotifLoaded] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -48,6 +81,44 @@ export function Navbar() {
     const interval = setInterval(fetchCount, 30000);
     return () => clearInterval(interval);
   }, [user]);
+
+  // Close dropdowns on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Fetch notifications when panel opens
+  const openNotifPanel = () => {
+    const next = !notifOpen;
+    setNotifOpen(next);
+    setMenuOpen(false);
+    if (next) {
+      fetch("/api/notifications")
+        .then(r => r.json())
+        .then(d => {
+          setNotifications(d.notifications || []);
+          setUnreadCount(d.unread_count || 0);
+          setNotifLoaded(true);
+        })
+        .catch(() => {});
+    }
+  };
+
+  const markAllRead = () => {
+    fetch("/api/notifications", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ all: true }),
+    }).catch(() => {});
+    setNotifications(prev => prev.map(n => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
+    setUnreadCount(0);
+  };
 
   // Check for active stream from localStorage
   useEffect(() => {
@@ -135,22 +206,109 @@ export function Navbar() {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-3">
-          {/* Notification bell */}
+          {/* Notification bell + dropdown */}
           {user && (
-            <Link
-              href="/notifications"
-              className="relative px-1.5 py-1 text-text-secondary hover:text-accent-yellow transition-colors"
-              title="通知"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-              </svg>
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] flex items-center justify-center bg-accent-pink text-white font-[family-name:var(--font-pixel)] text-[6px] px-0.5 leading-none">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={openNotifPanel}
+                className={`relative px-1.5 py-1 transition-colors ${notifOpen ? "text-accent-yellow" : "text-text-secondary hover:text-accent-yellow"}`}
+                title="通知"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] flex items-center justify-center bg-accent-pink text-white font-[family-name:var(--font-pixel)] text-[6px] px-0.5 leading-none">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <div className="absolute right-0 top-full mt-1 w-80 pixel-border bg-bg-card z-50 flex flex-col max-h-[420px]">
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-border-pixel/50 shrink-0">
+                    <span className="font-[family-name:var(--font-pixel)] text-[9px] text-text-primary">
+                      通知
+                    </span>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllRead}
+                        className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-cyan hover:text-accent-green transition-colors"
+                      >
+                        全部已读
+                      </button>
+                    )}
+                  </div>
+
+                  {/* List */}
+                  <div className="flex-1 overflow-y-auto min-h-0">
+                    {!notifLoaded ? (
+                      <p className="text-xs text-text-secondary/40 text-center py-6 animate-pulse">加载中...</p>
+                    ) : notifications.length === 0 ? (
+                      <p className="text-xs text-text-secondary/40 text-center py-6">暂无通知</p>
+                    ) : (
+                      notifications.slice(0, 15).map((n) => {
+                        const cfg = NOTIF_TYPE[n.type];
+                        const isUnread = !n.read_at;
+                        return (
+                          <div
+                            key={n.id}
+                            className={`px-3 py-2.5 flex items-start gap-2.5 border-b border-border-pixel/20 last:border-0 ${
+                              isUnread ? "bg-accent-cyan/5" : ""
+                            }`}
+                          >
+                            {/* Avatar */}
+                            <div className="w-7 h-7 bg-bg-surface border border-border-pixel shrink-0 overflow-hidden mt-0.5">
+                              {n.actor_avatar ? (
+                                <img src={n.actor_avatar} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="flex items-center justify-center w-full h-full font-[family-name:var(--font-pixel)] text-[8px] text-accent-purple">
+                                  {n.actor_name.charAt(0)}
+                                </span>
+                              )}
+                            </div>
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[11px] text-text-primary leading-relaxed">
+                                <span className={`font-medium ${cfg.color}`}>{cfg.icon} {n.actor_name}</span>
+                                {" "}<span className="text-text-secondary">{cfg.verb}</span>
+                                {n.target_title && n.type !== "follow" && (
+                                  <Link
+                                    href={`/watch/${n.target_id}`}
+                                    className="text-accent-cyan hover:underline ml-0.5"
+                                    onClick={() => setNotifOpen(false)}
+                                  >
+                                    {n.target_title}
+                                  </Link>
+                                )}
+                              </p>
+                              <span className="font-[family-name:var(--font-pixel)] text-[6px] text-text-secondary/40">
+                                {timeAgo(n.created_at)}
+                              </span>
+                            </div>
+                            {isUnread && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-accent-cyan shrink-0 mt-2" />
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  {notifications.length > 0 && (
+                    <Link
+                      href="/notifications"
+                      onClick={() => setNotifOpen(false)}
+                      className="block text-center py-2 border-t border-border-pixel/50 font-[family-name:var(--font-pixel)] text-[8px] text-accent-cyan hover:text-accent-green transition-colors shrink-0"
+                    >
+                      查看全部通知
+                    </Link>
+                  )}
+                </div>
               )}
-            </Link>
+            </div>
           )}
 
           {activeRoom ? (
@@ -173,7 +331,7 @@ export function Navbar() {
           {user ? (
             <div className="relative">
               <button
-                onClick={() => setMenuOpen(!menuOpen)}
+                onClick={() => { setMenuOpen(!menuOpen); setNotifOpen(false); }}
                 className="flex items-center gap-2 px-2 py-1 border-2 border-border-pixel hover:border-accent-purple transition-colors"
               >
                 {avatarUrl ? (
