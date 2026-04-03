@@ -8,12 +8,14 @@ import { ToolBadge } from "@/components/ToolBadge";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ReactionButtons } from "@/components/ReactionButtons";
 import { ChatPanel } from "@/components/ChatPanel";
+import { useI18n } from "@/lib/i18n/context";
 
 interface StreamDetailClientProps {
   stream: Stream;
 }
 
 export function StreamDetailClient({ stream }: StreamDetailClientProps) {
+  const { t } = useI18n();
   const { streamer, project, status, codingTool, viewers, reactions, stages } =
     stream;
   const isLive = status === "live";
@@ -42,7 +44,7 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
               href="/"
               className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary hover:text-accent-cyan transition-colors"
             >
-              ◁ 返回大厅
+              ◁ {t('nav.backToHome')}
             </Link>
             <span className="text-border-pixel">│</span>
             <h1 className="font-[family-name:var(--font-pixel)] text-[12px] text-text-primary glitch-hover">
@@ -60,7 +62,7 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
                   : "border-border-pixel text-text-secondary"
               }`}
             >
-              💬 {chatOpen ? "隐藏聊天" : "显示聊天"}
+              💬 {chatOpen ? t('stream.hideChat') : t('stream.showChat')}
             </button>
             <button
               onClick={() => setIsFavorited(!isFavorited)}
@@ -70,7 +72,7 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
                   : "border-accent-yellow text-accent-yellow"
               }`}
             >
-              {isFavorited ? "★ 已收藏" : "☆ 收藏"}
+              {isFavorited ? t('btn.favorited') : t('btn.favorite')}
             </button>
           </div>
         </div>
@@ -100,10 +102,10 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                   <span className="text-6xl mb-3">☕</span>
                   <span className="font-[family-name:var(--font-pixel)] text-[12px] text-accent-yellow glow-purple">
-                    主播暂时离开
+                    {t('stream.awayTitle')}
                   </span>
                   <span className="text-sm text-text-secondary mt-2">
-                    请稍候，直播很快恢复
+                    {t('stream.awayDesc')}
                   </span>
                 </div>
               )}
@@ -112,7 +114,7 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                   <span className="text-6xl mb-3">🏁</span>
                   <span className="font-[family-name:var(--font-pixel)] text-[12px] text-accent-green glow-green">
-                    项目已完成
+                    {t('stream.completedTitle')}
                   </span>
                   {project.productUrl && (
                     <a
@@ -121,7 +123,7 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
                       rel="noopener noreferrer"
                       className="mt-4 pixel-btn border-accent-cyan text-accent-cyan hover:bg-accent-cyan hover:text-bg-primary"
                     >
-                      🚀 试用成品
+                      🚀 {t('stream.tryProduct')}
                     </a>
                   )}
                 </div>
@@ -161,7 +163,7 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
             <div className="hud-panel p-3 flex items-center justify-between">
               <ReactionButtons reactions={reactions} />
               <div className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary hidden sm:block">
-                总反应 <span className="text-accent-yellow">{totalReactions}</span>
+                {t('stream.totalReactions')} <span className="text-accent-yellow">{totalReactions}</span>
               </div>
             </div>
 
@@ -172,7 +174,7 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
                 <div className="flex items-center gap-2 mb-2">
                   <span className="font-[family-name:var(--font-pixel)] text-[8px] text-accent-purple">◈</span>
                   <span className="font-[family-name:var(--font-pixel)] text-[9px] text-text-secondary">
-                    项目信息
+                    {t('stream.projectInfo')}
                   </span>
                 </div>
 
@@ -181,7 +183,7 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
                 </p>
 
                 <div className="flex flex-wrap gap-1.5">
-                  <span className="pixel-tag">{CATEGORY_LABELS[project.category]}</span>
+                  <span className="pixel-tag">{t(`category.${project.category}`)}</span>
                   {project.platforms.map((p) => (
                     <span key={p} className="pixel-tag">{PLATFORM_LABELS[p]}</span>
                   ))}
@@ -209,7 +211,7 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
                 <div className="flex items-center gap-2 mb-3">
                   <span className="font-[family-name:var(--font-pixel)] text-[8px] text-accent-pink">◈</span>
                   <span className="font-[family-name:var(--font-pixel)] text-[9px] text-text-secondary">
-                    主播
+                    {t('stream.streamer')}
                   </span>
                 </div>
 
@@ -245,8 +247,9 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
                         ? "border-text-secondary text-text-secondary bg-bg-surface"
                         : "border-accent-pink text-accent-pink hover:bg-accent-pink hover:text-white"
                     }`}
+                    title="演示数据"
                   >
-                    {isFollowing ? "✓ 已关注" : "+ 关注"}
+                    {isFollowing ? t('btn.following') : t('btn.follow')}
                   </button>
                 </div>
               </div>
@@ -257,7 +260,7 @@ export function StreamDetailClient({ stream }: StreamDetailClientProps) {
               <div className="flex items-center gap-2 mb-3">
                 <span className="font-[family-name:var(--font-pixel)] text-[8px] text-accent-green">◈</span>
                 <span className="font-[family-name:var(--font-pixel)] text-[9px] text-text-secondary">
-                  开发进度
+                  {t('stream.progress')}
                 </span>
                 <div className="flex-1" />
                 <span className="font-[family-name:var(--font-pixel)] text-[8px] text-accent-yellow">

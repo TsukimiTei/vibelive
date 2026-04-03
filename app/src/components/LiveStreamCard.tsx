@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { ToolBadge } from "./ToolBadge";
+import { CodingTool } from "@/lib/types";
+import { useI18n } from "@/lib/i18n/context";
 
 interface LiveStream {
   id: string;
@@ -19,6 +24,7 @@ interface LiveStream {
 }
 
 export function LiveStreamCard({ stream }: { stream: LiveStream }) {
+  const { t } = useI18n();
   const profile = stream.profiles;
   const displayName = profile?.display_name || stream.streamer_name;
   const avatarUrl = profile?.avatar_url;
@@ -39,7 +45,7 @@ export function LiveStreamCard({ stream }: { stream: LiveStream }) {
               {stream.room_name.slice(0, 3).toUpperCase()}
             </span>
             <span className="font-[family-name:var(--font-pixel)] text-[8px] text-accent-green/50 mt-2">
-              LIVE · 屏幕共享中
+              LIVE · {t('status.screenShare')}
             </span>
           </div>
 
@@ -83,9 +89,12 @@ export function LiveStreamCard({ stream }: { stream: LiveStream }) {
           </div>
 
           <div className="flex items-center gap-2 text-[8px] font-[family-name:var(--font-pixel)] text-text-secondary">
+            {stream.coding_tool && stream.coding_tool !== "other" && (
+              <ToolBadge tool={stream.coding_tool as CodingTool} />
+            )}
             <span className="text-accent-yellow">⏱ {elapsedStr}</span>
             <span className="text-border-pixel">│</span>
-            <span>{stream.room_name}</span>
+            <span className="truncate">{stream.room_name}</span>
           </div>
         </div>
       </div>

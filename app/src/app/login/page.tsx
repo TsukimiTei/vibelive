@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/context";
 
 type Mode = "login" | "register";
 
 export default function LoginPage() {
+  const { t } = useI18n();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,7 +39,7 @@ export default function LoginPage() {
       if (error) {
         setError(error.message);
       } else {
-        setMessage("注册成功！请查收邮箱中的确认链接。");
+        setMessage(t('login.registerSuccess'));
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
@@ -75,7 +77,7 @@ export default function LoginPage() {
             </span>
           </Link>
           <p className="text-sm text-text-secondary">
-            {mode === "login" ? "登录你的账号" : "创建新账号"}
+            {mode === "login" ? t('login.title') : t('login.titleRegister')}
           </p>
         </div>
 
@@ -102,7 +104,7 @@ export default function LoginPage() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Google 登录
+          {t('login.google')}
         </button>
 
         {/* Divider */}
@@ -118,7 +120,7 @@ export default function LoginPage() {
         <form onSubmit={handleEmailAuth} className="pixel-border bg-bg-card p-5 space-y-4">
           <div>
             <label className="block text-xs text-text-secondary mb-1.5">
-              邮箱
+              {t('login.email')}
             </label>
             <input
               type="email"
@@ -132,7 +134,7 @@ export default function LoginPage() {
 
           <div>
             <label className="block text-xs text-text-secondary mb-1.5">
-              密码
+              {t('login.password')}
             </label>
             <input
               type="password"
@@ -140,7 +142,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              placeholder="至少 6 位"
+              placeholder={t('login.passwordHint')}
               className="w-full bg-bg-primary border-2 border-border-pixel px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent-purple focus:outline-none transition-colors"
             />
           </div>
@@ -163,10 +165,10 @@ export default function LoginPage() {
             className="pixel-btn border-accent-purple text-accent-purple hover:bg-accent-purple hover:text-white w-full text-[10px] py-3 disabled:opacity-50"
           >
             {loading
-              ? "处理中..."
+              ? t('login.processing')
               : mode === "login"
-                ? "▶ 邮箱登录"
-                : "▶ 注册账号"}
+                ? `▶ ${t('login.submit')}`
+                : `▶ ${t('login.submitRegister')}`}
           </button>
         </form>
 
@@ -174,22 +176,22 @@ export default function LoginPage() {
         <p className="text-center text-xs text-text-secondary">
           {mode === "login" ? (
             <>
-              还没有账号？{" "}
+              {t('login.noAccount')}{" "}
               <button
                 onClick={() => { setMode("register"); setError(""); setMessage(""); }}
                 className="text-accent-cyan hover:underline"
               >
-                注册
+                {t('login.register')}
               </button>
             </>
           ) : (
             <>
-              已有账号？{" "}
+              {t('login.hasAccount')}{" "}
               <button
                 onClick={() => { setMode("login"); setError(""); setMessage(""); }}
                 className="text-accent-cyan hover:underline"
               >
-                登录
+                {t('login.login')}
               </button>
             </>
           )}

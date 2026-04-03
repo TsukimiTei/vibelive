@@ -186,6 +186,128 @@ body {
   animation: float-up 0.8s ease-out forwards;
 }
 
+/* ── Reaction System ─────────────────────────── */
+
+/* Base rise: float up with horizontal wobble + glow trail */
+@keyframes reaction-rise {
+  0% { opacity: 1; transform: translateY(0) translateX(0) scale(1); filter: blur(0); }
+  25% { opacity: 1; transform: translateY(-25%) translateX(8px) scale(1.15); }
+  50% { opacity: 0.8; transform: translateY(-50%) translateX(-6px) scale(1.25); }
+  75% { opacity: 0.4; transform: translateY(-75%) translateX(4px) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-110%) translateX(0) scale(0.6); filter: blur(2px); }
+}
+
+/* Tier 1+: pixel particle scatter */
+@keyframes pixel-burst {
+  0% {
+    opacity: 1;
+    box-shadow:
+      0 0 0 0 currentColor,
+      0 0 0 0 currentColor,
+      0 0 0 0 currentColor,
+      0 0 0 0 currentColor;
+  }
+  100% {
+    opacity: 0;
+    box-shadow:
+      -12px -16px 0 0 currentColor,
+       14px -12px 0 0 currentColor,
+      -10px  10px 0 0 currentColor,
+       16px   8px 0 0 currentColor;
+  }
+}
+
+/* Button combo glow pulse */
+@keyframes combo-glow {
+  0%, 100% { box-shadow: 0 0 4px var(--glow-color, var(--glow-cyan)); }
+  50% { box-shadow: 0 0 14px var(--glow-color, var(--glow-cyan)), 0 0 28px var(--glow-color, var(--glow-cyan)); }
+}
+
+/* Tier 3 combo banner entrance */
+@keyframes combo-banner-in {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); filter: blur(8px); }
+  40% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); filter: blur(0); }
+  60% { transform: translate(-50%, -50%) scale(0.95); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes combo-banner-out {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.3); filter: blur(6px); }
+}
+
+/* Tier 3 screen border flash */
+@keyframes screen-flash {
+  0% { box-shadow: inset 0 0 30px var(--flash-color, rgba(0,255,255,0.6)); }
+  50% { box-shadow: inset 0 0 60px var(--flash-color, rgba(0,255,255,0.8)); }
+  100% { box-shadow: inset 0 0 0 transparent; }
+}
+
+/* Reaction overlay container */
+.reaction-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 15;
+}
+
+/* Individual reaction particle */
+.reaction-particle {
+  position: absolute;
+  bottom: -10%;
+  will-change: transform, opacity;
+  animation: reaction-rise 2.2s ease-out forwards;
+  text-shadow: 0 0 8px var(--reaction-glow, rgba(0,255,255,0.5));
+  font-size: 1.5rem;
+}
+.reaction-particle.tier-1 { font-size: 1.8rem; }
+.reaction-particle.tier-2 { font-size: 2.2rem; animation-duration: 2.5s; }
+.reaction-particle.tier-3 { font-size: 2.8rem; animation-duration: 2.8s; }
+
+/* Pixel burst particles (tier 1+) */
+.reaction-burst {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 0;
+  will-change: box-shadow, opacity;
+  animation: pixel-burst 0.6s ease-out forwards;
+}
+
+/* Combo banner */
+.combo-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  animation: combo-banner-in 0.4s ease-out forwards;
+  pointer-events: none;
+}
+.combo-banner.exiting {
+  animation: combo-banner-out 0.3s ease-in forwards;
+}
+
+/* Screen flash overlay (tier 3) */
+.screen-flash {
+  animation: screen-flash 0.4s ease-out forwards;
+}
+
+/* Button combo states */
+.reaction-btn-combo-1 { animation: combo-glow 1.5s ease-in-out infinite; }
+.reaction-btn-combo-2 { animation: combo-glow 0.8s ease-in-out infinite; }
+.reaction-btn-combo-3 { animation: combo-glow 0.4s ease-in-out infinite; }
+
+/* Button click bounce */
+@keyframes btn-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+.reaction-btn-pop {
+  animation: btn-pop 0.15s ease-out;
+}
+
 /* ── Ticker Scroll ────────────────────────────── */
 
 @keyframes ticker-scroll {

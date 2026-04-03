@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback, useRef, memo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MOCK_STREAMS } from "@/lib/mock-data";
-import { Stream, CATEGORY_LABELS } from "@/lib/types";
+import { Stream } from "@/lib/types";
 import { ToolBadge } from "@/components/ToolBadge";
+import { useI18n } from "@/lib/i18n/context";
 
 // ─── Star Field (Canvas) ─────────────────────────
 function StarField() {
@@ -95,6 +96,7 @@ const CardContent = memo(function CardContent({
   stream: Stream;
   onSelect: (stream: Stream) => void;
 }) {
+  const { t } = useI18n();
   const { streamer, project, status, codingTool, viewers, reactions, stages } =
     stream;
   const isLive = status === "live";
@@ -138,12 +140,12 @@ const CardContent = memo(function CardContent({
           )}
           {status === "away" && (
             <span className="inline-flex items-center gap-1 bg-amber-600/80 backdrop-blur-sm px-2 py-0.5 font-[family-name:var(--font-pixel)] text-[7px] text-white">
-              ☕ 暂离
+              {t('status.away')}
             </span>
           )}
           {status === "offline" && (
             <span className="inline-flex items-center gap-1 bg-gray-600/80 backdrop-blur-sm px-2 py-0.5 font-[family-name:var(--font-pixel)] text-[7px] text-white">
-              已结束
+              {t('status.offline')}
             </span>
           )}
         </div>
@@ -199,7 +201,7 @@ const CardContent = memo(function CardContent({
 
         <div className="mt-2">
           <span className="pixel-tag text-[5px]">
-            {CATEGORY_LABELS[project.category]}
+            {t(`category.${project.category}`)}
           </span>
         </div>
       </div>
@@ -215,6 +217,7 @@ function DetailPanel({
   stream: Stream;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const { streamer, project, status, codingTool, viewers, reactions, stages } =
     stream;
   const isLive = status === "live";
@@ -263,10 +266,10 @@ function DetailPanel({
                 </span>
               )}
               {status === "away" && (
-                <span className="viewer-badge bg-amber-600/80">☕ 暂离</span>
+                <span className="viewer-badge bg-amber-600/80">{t('status.away')}</span>
               )}
               {status === "offline" && (
-                <span className="viewer-badge bg-gray-600/80">已结束</span>
+                <span className="viewer-badge bg-gray-600/80">{t('status.offline')}</span>
               )}
               <ToolBadge tool={codingTool} />
             </div>
@@ -317,19 +320,19 @@ function DetailPanel({
 
             <div className="grid grid-cols-4 gap-2">
               {[
-                { label: "观众", value: viewers, color: "text-accent-pink" },
+                { label: t('stat.viewers_label'), value: viewers, color: "text-accent-pink" },
                 {
-                  label: "想用",
+                  label: t('reaction.want_to_use'),
                   value: reactions.want_to_use,
                   color: "text-accent-green",
                 },
                 {
-                  label: "有趣",
+                  label: t('reaction.interesting'),
                   value: reactions.interesting,
                   color: "text-accent-cyan",
                 },
                 {
-                  label: "期待",
+                  label: t('reaction.looking_forward'),
                   value: reactions.looking_forward,
                   color: "text-accent-orange",
                 },
@@ -353,7 +356,7 @@ function DetailPanel({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-[family-name:var(--font-pixel)] text-[7px] text-text-secondary">
-                  开发进度
+                  {t('explore.progress')}
                 </span>
                 <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-cyan">
                   {completedStages}/{stages.length}
@@ -379,7 +382,7 @@ function DetailPanel({
 
             <div className="flex flex-wrap gap-1.5 pt-1">
               <span className="pixel-tag">
-                {CATEGORY_LABELS[project.category]}
+                {t(`category.${project.category}`)}
               </span>
               {project.tags.map((tag) => (
                 <span
@@ -393,10 +396,10 @@ function DetailPanel({
 
             <div className="flex gap-2 pt-1">
               <Link
-                href={`/stream/${stream.id}`}
+                href={stream.id.startsWith("real-") ? `/watch/${(stream as Stream & { _roomName?: string })._roomName || stream.id}` : `/stream/${stream.id}`}
                 className="flex-1 pixel-btn border-accent-green text-accent-green hover:bg-accent-green hover:text-bg-primary text-center text-[9px]"
               >
-                {isLive ? "▶ 进入直播间" : "查看项目"}
+                {isLive ? t('btn.enterStream') : t('btn.viewProject')}
               </Link>
               {project.productUrl && (
                 <a
@@ -405,7 +408,7 @@ function DetailPanel({
                   rel="noopener noreferrer"
                   className="pixel-btn border-accent-cyan text-accent-cyan hover:bg-accent-cyan hover:text-bg-primary text-[9px]"
                 >
-                  🚀 试用
+                  {t('btn.tryIt')}
                 </a>
               )}
             </div>
@@ -418,6 +421,7 @@ function DetailPanel({
 
 // ─── Main Explore Page ───────────────────────────
 export default function ExplorePage() {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   const reticleRef = useRef<HTMLDivElement>(null);
   const reticleOuterRef = useRef<HTMLDivElement>(null);
@@ -441,9 +445,46 @@ export default function ExplorePage() {
   // Only discrete state that needs re-render
   const [selectedStream, setSelectedStream] = useState<Stream | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [realStreams, setRealStreams] = useState<Stream[]>([]);
   const selectedStreamRef = useRef<Stream | null>(null);
 
-  const streams = MOCK_STREAMS;
+  // Fetch real streams and convert to Stream shape
+  useEffect(() => {
+    fetch("/api/streams").then(r => r.json()).then(({ streams: raw }) => {
+      if (!raw?.length) return;
+      const converted: Stream[] = raw.map((s: Record<string, string | number>) => ({
+        id: `real-${s.id}`,
+        streamer: {
+          id: s.user_id as string,
+          username: (s.streamer_name as string) || "streamer",
+          displayName: (s.streamer_name as string) || "主播",
+          avatarUrl: "",
+          bio: "",
+          followers: 0,
+        },
+        project: {
+          id: `rp-${s.id}`,
+          name: (s.project_name as string) || (s.title as string) || (s.room_name as string),
+          description: (s.description as string) || "正在直播中...",
+          category: "other" as const,
+          platforms: ["web" as const],
+          tags: [],
+          thumbnailUrl: "",
+        },
+        status: "live" as const,
+        codingTool: ((s.coding_tool as string) || "other") as Stream["codingTool"],
+        viewers: (s.viewers_count as number) || 0,
+        reactions: { want_to_use: 0, interesting: 0, looking_forward: 0 },
+        stages: [{ name: (s.stage as string) || "编码中", completed: false }],
+        startedAt: s.started_at as string,
+        totalDevTime: 0,
+        _roomName: s.room_name as string, // extra field for linking
+      }));
+      setRealStreams(converted);
+    }).catch(() => {});
+  }, []);
+
+  const streams = [...realStreams, ...MOCK_STREAMS];
   const radius = 500;
   const angleStep = (Math.PI * 2) / streams.length;
 
@@ -694,17 +735,17 @@ export default function ExplorePage() {
           EXPLORE
         </h1>
         <p className="text-text-secondary/40 text-xs tracking-wider">
-          拖拽旋转 · 滚轮缩放 · 点击探索
+          {t('explore.subtitle')}
         </p>
         <div className="flex items-center justify-center gap-5 mt-3">
           <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-pink">
             ◉ {liveCount} LIVE
           </span>
           <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-cyan">
-            ◈ {totalViewers} 在线
+            ◈ {totalViewers} {t('nav.online')}
           </span>
           <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-yellow">
-            ◆ {streams.length} 项目
+            ◆ {streams.length} {t('explore.projects')}
           </span>
         </div>
       </div>
@@ -782,14 +823,14 @@ export default function ExplorePage() {
             style={{ cursor: "none" }}
             data-hoverable="true"
           >
-            ◁ 大厅
+            ◁ {t('nav.home')}
           </Link>
 
           <div className="flex items-center gap-6 font-[family-name:var(--font-pixel)] text-[6px] text-text-secondary/30">
-            <span>← → 旋转</span>
-            <span>↑ ↓ 缩放</span>
-            <span>DRAG 自由旋转</span>
-            <span>ESC 关闭</span>
+            <span>{t('explore.rotate')}</span>
+            <span>{t('explore.zoom')}</span>
+            <span>{t('explore.drag')}</span>
+            <span>{t('explore.close')}</span>
           </div>
 
           <Link
@@ -798,7 +839,7 @@ export default function ExplorePage() {
             style={{ cursor: "none" }}
             data-hoverable="true"
           >
-            我的 ▷
+            {t('nav.profile')} ▷
           </Link>
         </div>
       </div>

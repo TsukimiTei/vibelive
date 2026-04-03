@@ -1,0 +1,260 @@
+import type { TranslationKey } from "./zh";
+
+export const en: Record<TranslationKey, string> = {
+  // ── Navigation ────────────────────────────
+  "nav.home": "Home",
+  "nav.explore": "Explore",
+  "nav.profile": "Profile",
+  "nav.goLive": "Go Live",
+  "nav.myStream": "My Stream",
+  "nav.login": "Login",
+  "nav.logout": "Logout",
+  "nav.profilePage": "My Profile",
+  "nav.live": "LIVE",
+  "nav.online": "Online",
+  "nav.notifications": "Notifications",
+  "nav.noNotifications": "No notifications",
+  "nav.loading": "Loading...",
+  "nav.markAllRead": "Mark all read",
+  "nav.viewAll": "View all",
+  "nav.unread": "Unread",
+  "nav.back": "Back",
+  "nav.backToHome": "Back to Home",
+
+  // ── Buttons ───────────────────────────────
+  "btn.follow": "+ Follow",
+  "btn.following": "Following",
+  "btn.favorite": "☆ Save",
+  "btn.favorited": "★ Saved",
+  "btn.enterStream": "▶ Watch Live",
+  "btn.viewProject": "View Project",
+  "btn.tryIt": "🚀 Try it",
+  "btn.send": "Send",
+  "btn.goLive": "Start Streaming",
+  "btn.confirmEnd": "End Stream",
+  "btn.ending": "Ending...",
+  "btn.play": "Play",
+  "btn.pause": "Pause",
+  "btn.mute": "Mute",
+  "btn.unmute": "Unmute",
+  "btn.fullscreen": "Fullscreen",
+  "btn.exitFullscreen": "Exit Fullscreen",
+  "btn.goExplore": "Browse streams",
+
+  // ── Status ────────────────────────────────
+  "status.live": "Live",
+  "status.away": "☕ Away",
+  "status.offline": "Ended",
+  "status.screenShare": "Screen Sharing",
+  "status.screenShareLive": "Screen Share Live",
+  "status.connecting": "Connecting...",
+
+  // ── Stats ─────────────────────────────────
+  "stat.liveNow": "Live Now",
+  "stat.viewers": "Viewers",
+  "stat.totalReactions": "Reactions",
+  "stat.totalProjects": "Projects",
+  "stat.viewers_label": "Viewers",
+  "stat.totalReaction": "Reactions",
+
+  // ── Home Page ─────────────────────────────
+  "home.followingLive": "Following — Now Live",
+  "home.discover": "Discover",
+  "home.quickBrowse": "Quick Browse",
+  "home.noMatch": "No matching streams found",
+  "home.hot": "🔥 HOT",
+
+  // ── Explore Page ──────────────────────────
+  "explore.title": "EXPLORE",
+  "explore.subtitle": "Drag to rotate · Scroll to zoom · Click to explore",
+  "explore.projects": "Projects",
+  "explore.rotate": "← → Rotate",
+  "explore.zoom": "↑ ↓ Zoom",
+  "explore.drag": "DRAG to rotate",
+  "explore.close": "ESC Close",
+  "explore.progress": "Progress",
+
+  // ── Filter ────────────────────────────────
+  "filter.category": "Category",
+  "filter.platform": "Platform",
+  "filter.sort": "Sort",
+  "filter.all": "All",
+  "filter.sortViewers": "Most Viewers",
+  "filter.sortReactions": "Most Reactions",
+  "filter.sortRecent": "Most Recent",
+
+  // ── Categories ────────────────────────────
+  "category.notes": "Notes",
+  "category.productivity": "Productivity",
+  "category.marketing": "Marketing",
+  "category.video": "Video",
+  "category.social": "Social",
+  "category.dev-tools": "Dev Tools",
+  "category.ai": "AI",
+  "category.gaming": "Gaming",
+  "category.education": "Education",
+  "category.other": "Other",
+
+  // ── Platforms ──────────────────────────────
+  "platform.web": "Web",
+  "platform.mobile": "Mobile",
+  "platform.desktop": "Desktop",
+  "platform.extension": "Extension",
+  "platform.api": "API",
+
+  // ── Tools ─────────────────────────────────
+  "tool.cursor": "Cursor",
+  "tool.copilot": "GitHub Copilot",
+  "tool.windsurf": "Windsurf",
+  "tool.claude-code": "Claude Code",
+  "tool.v0": "v0",
+  "tool.bolt": "Bolt",
+  "tool.replit": "Replit",
+  "tool.other": "Other",
+
+  // ── Reactions ─────────────────────────────
+  "reaction.want_to_use": "Want to Use",
+  "reaction.interesting": "Interesting",
+  "reaction.looking_forward": "Looking Forward",
+
+  // ── Profile Page ──────────────────────────
+  "profile.tab.streams": "My Streams",
+  "profile.tab.following": "Following",
+  "profile.tab.followers": "Followers",
+  "profile.tab.favorites": "Saved",
+  "profile.tab.achievements": "Achievements",
+  "profile.emptyStreams": "No stream history yet",
+  "profile.emptyFollowing": "Not following anyone yet",
+  "profile.emptyFollowers": "No followers yet",
+  "profile.emptyFavorites": "No saved projects yet",
+  "profile.unknownUser": "Unknown User",
+  "profile.followers": "Followers",
+  "profile.following": "Following",
+
+  // ── Achievements ──────────────────────────
+  "achievement.first_watch.name": "First Watch",
+  "achievement.first_watch.desc": "Watch your first stream",
+  "achievement.try_10.name": "Early Adopter",
+  "achievement.try_10.desc": "Tap 'Want to Use' on 10 projects",
+  "achievement.watch_10h.name": "Dedicated Viewer",
+  "achievement.watch_10h.desc": "Watch 10 hours of streams",
+  "achievement.fav_5.name": "Collector",
+  "achievement.fav_5.desc": "Save 5 projects",
+  "achievement.streak_7.name": "Streak Master",
+  "achievement.streak_7.desc": "Watch streams 7 days in a row",
+  "achievement.witness_10.name": "Diamond Eye",
+  "achievement.witness_10.desc": "Witness 10 projects launch",
+
+  // ── Go Live Page ──────────────────────────
+  "goLive.title": "Stream Settings",
+  "goLive.roomName": "Room Name (viewers will join via this name)",
+  "goLive.roomPlaceholder": "e.g. my-coding-stream",
+  "goLive.tool": "AI Tool",
+  "goLive.quality": "Quality",
+  "goLive.cover": "Cover Image (optional)",
+  "goLive.streamer": "Streamer",
+  "goLive.projectInfo": "Project Info",
+  "goLive.projectName": "Project Name",
+  "goLive.projectStage": "Current Stage",
+  "goLive.projectDesc": "Description",
+  "goLive.projectQuestion": "What are you building?",
+  "goLive.projectDescPlaceholder": "Briefly describe your project, tech stack, and the problem you're solving...",
+  "goLive.quality.original": "Original",
+  "goLive.quality.ultra": "Ultra",
+  "goLive.stage.idea": "Ideating",
+  "goLive.stage.design": "Designing",
+  "goLive.stage.coding": "Coding",
+  "goLive.stage.debug": "Debugging",
+  "goLive.stage.testing": "Testing",
+  "goLive.stage.deploy": "Deploying",
+  "goLive.stage.done": "Done",
+
+  // ── Stream Detail ─────────────────────────
+  "stream.projectInfo": "Project Info",
+  "stream.streamer": "Streamer",
+  "stream.progress": "Progress",
+  "stream.awayTitle": "Streamer is away",
+  "stream.awayDesc": "Please wait, the stream will resume soon",
+  "stream.completedTitle": "Project completed",
+  "stream.tryProduct": "Try the product",
+  "stream.totalReactions": "Reactions",
+  "stream.hideChat": "Hide Chat",
+  "stream.showChat": "Show Chat",
+
+  // ── Watch Page ────────────────────────────
+  "watch.quality": "Quality",
+  "watch.qualityAuto": "Auto",
+  "watch.layoutDefault": "Default",
+  "watch.layoutTheater": "Theater",
+  "watch.tabChat": "Chat",
+  "watch.tabProject": "Project",
+  "watch.tabVideo": "Video",
+  "watch.online": "Online",
+  "watch.enterNickname": "Enter your nickname",
+
+  // ── Chat ──────────────────────────────────
+  "chat.placeholder": "Say something...",
+  "chat.send": "Send",
+  "chat.you": "You",
+
+  // ── Login Page ────────────────────────────
+  "login.title": "Sign in to your account",
+  "login.titleRegister": "Create a new account",
+  "login.google": "Sign in with Google",
+  "login.email": "Email",
+  "login.password": "Password",
+  "login.passwordHint": "At least 6 characters",
+  "login.submit": "Sign in with Email",
+  "login.submitRegister": "Create Account",
+  "login.processing": "Processing...",
+  "login.noAccount": "Don't have an account?",
+  "login.hasAccount": "Already have an account?",
+  "login.register": "Sign up",
+  "login.login": "Sign in",
+  "login.registerSuccess": "Account created! Please check your email for a confirmation link.",
+
+  // ── Notifications ─────────────────────────
+  "notify.title": "Notifications",
+  "notify.follow": "followed you",
+  "notify.live": "started streaming",
+  "notify.favorite": "saved your stream",
+  "notify.empty": "No notifications",
+
+  // ── Time ──────────────────────────────────
+  "time.justNow": "Just now",
+  "time.minutesAgo": "{n}m ago",
+  "time.hoursAgo": "{n}h ago",
+  "time.daysAgo": "{n}d ago",
+  "time.hoursMinutes": "{h}h {m}m",
+  "time.minutes": "{m}m",
+
+  // ── Ticker ────────────────────────────────
+  "ticker.wantToUse": "{user} wants to use {project}",
+  "ticker.interesting": "{user} finds {project} interesting",
+  "ticker.lookingForward": "{user} is looking forward to {project}",
+  "ticker.startedStreaming": "{user} started streaming {project}",
+  "ticker.reactions": "{user}'s {project} got {count} reactions",
+  "ticker.using": "{user} is building {project} with {tool}",
+  "ticker.phase": "{user}'s {project} entered {phase} phase",
+  "ticker.launched": "{user}'s {project} is live!",
+  "ticker.published": "{project} is out — go try it!",
+  "ticker.wantToUseCount": "{project} got {count} 'Want to Use' reactions",
+  "ticker.building": "{user}'s {project} is building {phase}",
+
+  // ── Meta ──────────────────────────────────
+  "meta.title": "Vibelive — AI Coding Livestream",
+  "meta.description": "Watch AI write code in real-time. Discover the next product being built.",
+
+  // ── Errors ────────────────────────────────
+  "error.notConfigured": "Service not configured",
+  "error.notLoggedIn": "Not logged in",
+  "error.badRequest": "Bad request",
+  "error.loginRequired": "Login required to stream",
+  "error.joinFailed": "Failed to join",
+  "error.connectFailed": "Connection failed",
+  "error.tokenFailed": "Failed to get token",
+
+  // ── Misc ──────────────────────────────────
+  "misc.user": "User",
+  "misc.anonymous": "Anonymous",
+};

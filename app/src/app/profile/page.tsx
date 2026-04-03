@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/context";
 
 type Tab = "streams" | "following" | "followers" | "favorites" | "achievements";
 
@@ -49,16 +50,17 @@ interface Profile {
   created_at: string;
 }
 
-const ACHIEVEMENTS = [
-  { icon: "👁", name: "初见", desc: "观看第一场直播", unlocked: true },
-  { icon: "🚀", name: "尝鲜者", desc: "对 10 个项目点了「想用」", unlocked: false },
-  { icon: "🔥", name: "忠实观众", desc: "累计观看 10 小时", unlocked: false },
-  { icon: "⭐", name: "收藏家", desc: "收藏 5 个项目", unlocked: false },
-  { icon: "🏆", name: "全勤", desc: "连续 7 天观看直播", unlocked: false },
-  { icon: "💎", name: "钻石眼", desc: "见证 10 个项目上线", unlocked: false },
+const ACHIEVEMENTS_DATA = [
+  { icon: "👁", nameKey: "achievement.first_watch.name", descKey: "achievement.first_watch.desc", unlocked: true },
+  { icon: "🚀", nameKey: "achievement.try_10.name", descKey: "achievement.try_10.desc", unlocked: false },
+  { icon: "🔥", nameKey: "achievement.watch_10h.name", descKey: "achievement.watch_10h.desc", unlocked: false },
+  { icon: "⭐", nameKey: "achievement.fav_5.name", descKey: "achievement.fav_5.desc", unlocked: false },
+  { icon: "🏆", nameKey: "achievement.streak_7.name", descKey: "achievement.streak_7.desc", unlocked: false },
+  { icon: "💎", nameKey: "achievement.witness_10.name", descKey: "achievement.witness_10.desc", unlocked: false },
 ];
 
 export default function ProfilePage() {
+  const { t } = useI18n();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("streams");
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -113,7 +115,7 @@ export default function ProfilePage() {
     );
   }
 
-  const displayName = profile?.display_name || "用户";
+  const displayName = profile?.display_name || t('profile.unknownUser');
   const avatarUrl = profile?.avatar_url;
   const joinDate = profile?.created_at ? new Date(profile.created_at).toLocaleDateString("zh-CN") : "";
 
@@ -159,10 +161,10 @@ export default function ProfilePage() {
               {/* Stats */}
               <div className="grid grid-cols-2 gap-3 shrink-0">
                 {[
-                  { label: "直播", value: streams.length, color: "text-accent-green" },
-                  { label: "关注", value: follows.length, color: "text-accent-pink" },
-                  { label: "粉丝", value: followers.length, color: "text-accent-cyan" },
-                  { label: "收藏", value: favorites.length, color: "text-accent-yellow" },
+                  { label: t('profile.tab.streams'), value: streams.length, color: "text-accent-green" },
+                  { label: t('profile.following'), value: follows.length, color: "text-accent-pink" },
+                  { label: t('profile.followers'), value: followers.length, color: "text-accent-cyan" },
+                  { label: t('profile.tab.favorites'), value: favorites.length, color: "text-accent-yellow" },
                 ].map((stat) => (
                   <div key={stat.label} className="pixel-border bg-bg-primary/50 p-2 text-center min-w-[80px]">
                     <p className={`font-[family-name:var(--font-pixel)] text-sm ${stat.color}`}>
@@ -181,11 +183,11 @@ export default function ProfilePage() {
         {/* ── Tab Navigation ──────────────────── */}
         <div className="flex items-center gap-1 mb-5">
           {[
-            { key: "streams" as Tab, label: "我的直播", icon: "▶", count: streams.length },
-            { key: "following" as Tab, label: "关注", icon: "♥", count: follows.length },
-            { key: "followers" as Tab, label: "粉丝", icon: "◉", count: followers.length },
-            { key: "favorites" as Tab, label: "收藏", icon: "★", count: favorites.length },
-            { key: "achievements" as Tab, label: "成就徽章", icon: "◆", count: ACHIEVEMENTS.filter(a => a.unlocked).length },
+            { key: "streams" as Tab, label: t('profile.tab.streams'), icon: "▶", count: streams.length },
+            { key: "following" as Tab, label: t('profile.tab.following'), icon: "♥", count: follows.length },
+            { key: "followers" as Tab, label: t('profile.tab.followers'), icon: "◉", count: followers.length },
+            { key: "favorites" as Tab, label: t('profile.tab.favorites'), icon: "★", count: favorites.length },
+            { key: "achievements" as Tab, label: t('profile.tab.achievements'), icon: "◆", count: ACHIEVEMENTS_DATA.filter(a => a.unlocked).length },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -207,7 +209,7 @@ export default function ProfilePage() {
         {activeTab === "streams" && (
           <div className="space-y-2">
             {streams.length === 0 ? (
-              <EmptyState text="还没有直播记录" />
+              <EmptyState text={t('profile.emptyStreams')} />
             ) : (
               streams.map((s) => <StreamCard key={s.id} stream={s} />)
             )}
@@ -218,7 +220,7 @@ export default function ProfilePage() {
         {activeTab === "following" && (
           <div className="space-y-2">
             {follows.length === 0 ? (
-              <EmptyState text="还没有关注任何主播" />
+              <EmptyState text={t('profile.emptyFollowing')} />
             ) : (
               follows.map((f) => (
                 <div key={f.id} className="pixel-border bg-bg-card p-3 flex items-center gap-3">
@@ -233,14 +235,14 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="font-semibold text-sm text-text-primary">
-                      {f.profiles?.display_name || "未知用户"}
+                      {f.profiles?.display_name || t('profile.unknownUser')}
                     </span>
                     <p className="text-[11px] text-text-secondary truncate">
                       {f.profiles?.bio || ""}
                     </p>
                   </div>
                   <span className="font-[family-name:var(--font-pixel)] text-[7px] text-text-secondary shrink-0">
-                    {f.profiles?.followers_count || 0} 粉丝
+                    {f.profiles?.followers_count || 0} {t('profile.followers')}
                   </span>
                 </div>
               ))
@@ -252,7 +254,7 @@ export default function ProfilePage() {
         {activeTab === "followers" && (
           <div className="space-y-2">
             {followers.length === 0 ? (
-              <EmptyState text="还没有人关注你" />
+              <EmptyState text={t('profile.emptyFollowers')} />
             ) : (
               followers.map((f) => (
                 <div key={f.id} className="pixel-border bg-bg-card p-3 flex items-center gap-3">
@@ -267,14 +269,14 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="font-semibold text-sm text-text-primary">
-                      {f.profiles?.display_name || "未知用户"}
+                      {f.profiles?.display_name || t('profile.unknownUser')}
                     </span>
                     <p className="text-[11px] text-text-secondary truncate">
                       {f.profiles?.bio || ""}
                     </p>
                   </div>
                   <span className="font-[family-name:var(--font-pixel)] text-[7px] text-text-secondary shrink-0">
-                    关注于 {new Date(f.created_at).toLocaleDateString("zh-CN")}
+                    {new Date(f.created_at).toLocaleDateString("zh-CN")}
                   </span>
                 </div>
               ))
@@ -286,7 +288,7 @@ export default function ProfilePage() {
         {activeTab === "favorites" && (
           <div className="space-y-2">
             {favorites.length === 0 ? (
-              <EmptyState text="还没有收藏任何项目" />
+              <EmptyState text={t('profile.emptyFavorites')} />
             ) : (
               favorites.map((f) => (
                 <Link key={f.id} href={`/watch/${f.room_name}`} className="block group">
@@ -317,16 +319,16 @@ export default function ProfilePage() {
         {/* ── Achievements ──────────────────── */}
         {activeTab === "achievements" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {ACHIEVEMENTS.map((ach) => (
+            {ACHIEVEMENTS_DATA.map((ach) => (
               <div
-                key={ach.name}
+                key={ach.nameKey}
                 className={`pixel-border p-4 text-center transition-all ${
                   ach.unlocked ? "bg-bg-card" : "bg-bg-primary/50 opacity-40"
                 }`}
               >
                 <span className="text-3xl block mb-2">{ach.unlocked ? ach.icon : "🔒"}</span>
-                <h4 className="font-[family-name:var(--font-pixel)] text-[9px] text-text-primary">{ach.name}</h4>
-                <p className="text-[11px] text-text-secondary mt-1">{ach.desc}</p>
+                <h4 className="font-[family-name:var(--font-pixel)] text-[9px] text-text-primary">{t(ach.nameKey as any)}</h4>
+                <p className="text-[11px] text-text-secondary mt-1">{t(ach.descKey as any)}</p>
                 {ach.unlocked && (
                   <span className="inline-block mt-2 font-[family-name:var(--font-pixel)] text-[6px] text-accent-green">✓ 已解锁</span>
                 )}
@@ -339,17 +341,18 @@ export default function ProfilePage() {
   );
 }
 
-function formatDuration(sec: number) {
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  return h > 0 ? `${h}小时${m}分钟` : `${m}分钟`;
-}
-
 function StreamCard({ stream: s }: { stream: StreamEntry }) {
+  const { t } = useI18n();
   const isLive = s.status === "live";
   const duration = s.ended_at && s.started_at
     ? Math.floor((new Date(s.ended_at).getTime() - new Date(s.started_at).getTime()) / 1000)
     : null;
+
+  const formatDuration = (sec: number) => {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    return h > 0 ? t('time.hoursMinutes', { h, m }) : t('time.minutes', { m });
+  };
 
   const content = (
     <div className={`pixel-border bg-bg-card p-3 flex items-center gap-3 ${isLive ? "card-glow" : ""}`}>
@@ -380,7 +383,7 @@ function StreamCard({ stream: s }: { stream: StreamEntry }) {
         </p>
       </div>
       <span className={`font-[family-name:var(--font-pixel)] text-[7px] shrink-0 ${isLive ? "text-accent-green" : "text-text-secondary/50"}`}>
-        {isLive ? "直播中" : "已结束"}
+        {isLive ? t('status.live') : t('status.offline')}
       </span>
     </div>
   );
@@ -392,12 +395,13 @@ function StreamCard({ stream: s }: { stream: StreamEntry }) {
 }
 
 function EmptyState({ text }: { text: string }) {
+  const { t } = useI18n();
   return (
     <div className="pixel-border bg-bg-card p-12 text-center">
       <span className="text-3xl block mb-3 opacity-40">📭</span>
       <p className="font-[family-name:var(--font-pixel)] text-[9px] text-text-secondary">{text}</p>
       <Link href="/" className="inline-block mt-3 pixel-btn border-accent-purple text-accent-purple hover:bg-accent-purple hover:text-white text-[8px]">
-        去大厅看看
+        {t('btn.goExplore')}
       </Link>
     </div>
   );

@@ -6,6 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { MOCK_STREAMS } from "@/lib/mock-data";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { useI18n } from "@/lib/i18n/context";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 interface Notification {
   id: string;
@@ -18,33 +20,35 @@ interface Notification {
   created_at: string;
 }
 
-const NOTIF_TYPE = {
-  follow: { icon: "♥", verb: "关注了你", color: "text-accent-pink" },
-  stream_live: { icon: "▶", verb: "开始直播", color: "text-accent-green" },
-  favorite: { icon: "★", verb: "收藏了你的直播", color: "text-accent-yellow" },
+const NOTIF_TYPE_BASE = {
+  follow: { icon: "♥", verbKey: "notify.follow" as const, color: "text-accent-pink" },
+  stream_live: { icon: "▶", verbKey: "notify.live" as const, color: "text-accent-green" },
+  favorite: { icon: "★", verbKey: "notify.favorite" as const, color: "text-accent-yellow" },
 };
 
-function timeAgo(ts: string) {
-  const diff = Date.now() - new Date(ts).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "刚刚";
-  if (mins < 60) return `${mins}分钟前`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}小时前`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}天前`;
-  return new Date(ts).toLocaleDateString("zh-CN");
-}
-
 export function Navbar() {
+  const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
-  const liveCount = MOCK_STREAMS.filter((s) => s.status === "live").length;
-  const totalViewers = MOCK_STREAMS.reduce((sum, s) => sum + s.viewers, 0);
+
+  const timeAgo = (ts: string) => {
+    const diff = Date.now() - new Date(ts).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t('time.justNow');
+    if (mins < 60) return t('time.minutesAgo', { n: mins });
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return t('time.hoursAgo', { n: hours });
+    const days = Math.floor(hours / 24);
+    if (days < 30) return t('time.daysAgo', { n: days });
+    return new Date(ts).toLocaleDateString("zh-CN");
+  };
+  const mockLive = MOCK_STREAMS.filter((s) => s.status === "live").length;
+  const mockViewers = MOCK_STREAMS.reduce((sum, s) => sum + s.viewers, 0);
 
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeRoom, setActiveRoom] = useState<string | null>(null);
+  const [realLiveCount, setRealLiveCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -136,6 +140,21 @@ export function Navbar() {
     return () => clearInterval(interval);
   }, []);
 
+  // Fetch real live stream count
+  useEffect(() => {
+    const fetchCount = () => {
+      fetch("/api/streams").then(r => r.json()).then(d => {
+        setRealLiveCount(d.streams?.length || 0);
+      }).catch(() => {});
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const liveCount = mockLive + realLiveCount;
+  const totalViewers = mockViewers;
+
   const handleLogout = async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
@@ -172,7 +191,7 @@ export function Navbar() {
             </span>
             <span className="text-border-pixel">│</span>
             <span className="text-text-secondary">
-              {totalViewers} 在线
+              {totalViewers} {t('nav.online')}
             </span>
           </div>
         </div>
@@ -180,9 +199,9 @@ export function Navbar() {
         {/* Center: Nav links */}
         <div className="flex items-center gap-1">
           {[
-            { href: "/", label: "大厅", icon: "◈" },
-            { href: "/explore", label: "探索", icon: "◎" },
-            { href: "/profile", label: "我的", icon: "◇" },
+            { href: "/", label: t('nav.home'), icon: "◈" },
+            { href: "/explore", label: t('nav.explore'), icon: "◎" },
+            { href: "/profile", label: t('nav.profile'), icon: "◇" },
           ].map((link) => (
             <Link
               key={link.href}
@@ -212,7 +231,7 @@ export function Navbar() {
               <button
                 onClick={openNotifPanel}
                 className={`relative px-1.5 py-1 transition-colors ${notifOpen ? "text-accent-yellow" : "text-text-secondary hover:text-accent-yellow"}`}
-                title="通知"
+                title={t('nav.notifications')}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
@@ -229,14 +248,14 @@ export function Navbar() {
                   {/* Header */}
                   <div className="flex items-center justify-between px-3 py-2 border-b border-border-pixel/50 shrink-0">
                     <span className="font-[family-name:var(--font-pixel)] text-[9px] text-text-primary">
-                      通知
+                      {t('nav.notifications')}
                     </span>
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllRead}
                         className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-cyan hover:text-accent-green transition-colors"
                       >
-                        全部已读
+                        {t('nav.markAllRead')}
                       </button>
                     )}
                   </div>
@@ -244,12 +263,12 @@ export function Navbar() {
                   {/* List */}
                   <div className="flex-1 overflow-y-auto min-h-0">
                     {!notifLoaded ? (
-                      <p className="text-xs text-text-secondary/40 text-center py-6 animate-pulse">加载中...</p>
+                      <p className="text-xs text-text-secondary/40 text-center py-6 animate-pulse">{t('nav.loading')}</p>
                     ) : notifications.length === 0 ? (
-                      <p className="text-xs text-text-secondary/40 text-center py-6">暂无通知</p>
+                      <p className="text-xs text-text-secondary/40 text-center py-6">{t('nav.noNotifications')}</p>
                     ) : (
                       notifications.slice(0, 15).map((n) => {
-                        const cfg = NOTIF_TYPE[n.type];
+                        const cfg = NOTIF_TYPE_BASE[n.type];
                         const isUnread = !n.read_at;
                         return (
                           <div
@@ -272,7 +291,7 @@ export function Navbar() {
                             <div className="flex-1 min-w-0">
                               <p className="text-[11px] text-text-primary leading-relaxed">
                                 <span className={`font-medium ${cfg.color}`}>{cfg.icon} {n.actor_name}</span>
-                                {" "}<span className="text-text-secondary">{cfg.verb}</span>
+                                {" "}<span className="text-text-secondary">{t(cfg.verbKey)}</span>
                                 {n.target_title && n.type !== "follow" && (
                                   <Link
                                     href={`/watch/${n.target_id}`}
@@ -303,7 +322,7 @@ export function Navbar() {
                       onClick={() => setNotifOpen(false)}
                       className="block text-center py-2 border-t border-border-pixel/50 font-[family-name:var(--font-pixel)] text-[8px] text-accent-cyan hover:text-accent-green transition-colors shrink-0"
                     >
-                      查看全部通知
+                      {t('nav.viewAll')}
                     </Link>
                   )}
                 </div>
@@ -317,14 +336,14 @@ export function Navbar() {
               className="pixel-btn border-accent-green text-bg-primary bg-accent-green hover:opacity-90 flex items-center gap-1.5"
             >
               <span className="live-dot inline-block w-1.5 h-1.5 rounded-full bg-bg-primary" />
-              我的直播
+              {t('nav.myStream')}
             </Link>
           ) : (
             <Link
               href="/go-live"
               className="pixel-btn border-accent-green text-accent-green bg-transparent hover:bg-accent-green hover:text-bg-primary"
             >
-              开播
+              {t('nav.goLive')}
             </Link>
           )}
 
@@ -357,13 +376,13 @@ export function Navbar() {
                     onClick={() => setMenuOpen(false)}
                     className="block px-3 py-2 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-surface transition-colors"
                   >
-                    个人主页
+                    {t('nav.profilePage')}
                   </Link>
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-3 py-2 text-xs text-accent-pink hover:bg-bg-surface transition-colors"
                   >
-                    退出登录
+                    {t('nav.logout')}
                   </button>
                 </div>
               )}
@@ -373,9 +392,11 @@ export function Navbar() {
               href="/login"
               className="pixel-btn border-accent-purple text-accent-purple bg-transparent hover:bg-accent-purple hover:text-white"
             >
-              登录
+              {t('nav.login')}
             </Link>
           )}
+
+          <LanguageSwitcher />
         </div>
       </div>
     </nav>

@@ -1,21 +1,25 @@
 "use client";
 
-const TICKER_ITEMS = [
-  { icon: "🚀", text: "观众小李 对 NoteFlow 点了「想用」", color: "text-accent-green" },
-  { icon: "✨", text: "CodeFan99 觉得 SnapMetrics 「有趣」", color: "text-accent-cyan" },
-  { icon: "🔥", text: "新手观察者 「期待」QuickCut 上线", color: "text-accent-orange" },
-  { icon: "🎮", text: "PixelCrafter 开始直播 NoteFlow", color: "text-accent-pink" },
-  { icon: "🏆", text: "Code Wizard 的 QuickCut 获得 2664 个反应", color: "text-accent-yellow" },
-  { icon: "⚡", text: "独立开发者小明 正在用 Bolt 开发 TaskForge", color: "text-accent-purple" },
-  { icon: "🌟", text: "AI Artisan 的 LangBridge 进入语音翻译阶段", color: "text-accent-cyan" },
-  { icon: "📦", text: "Dev Sensei 的 CodeQuest 已上线！", color: "text-accent-green" },
-  { icon: "💻", text: "Neural Nomad 正在用 Copilot 开发 ReviewBot", color: "text-accent-pink" },
-  { icon: "🎯", text: "MindMap AI 已发布 — 快去试用！", color: "text-accent-yellow" },
-  { icon: "🔧", text: "ReviewBot 获得 999 个「想用」反应", color: "text-accent-green" },
-  { icon: "🎲", text: "indie_hacker 的 PixelQuest 正在构建战斗系统", color: "text-accent-purple" },
-];
+import { useI18n } from "@/lib/i18n/context";
 
 export function LiveTicker() {
+  const { t } = useI18n();
+
+  const TICKER_ITEMS = [
+    { icon: "🚀", text: t('ticker.wantToUse', { user: '观众小李', project: 'NoteFlow' }), color: "text-accent-green" },
+    { icon: "✨", text: t('ticker.interesting', { user: 'CodeFan99', project: 'SnapMetrics' }), color: "text-accent-cyan" },
+    { icon: "🔥", text: t('ticker.lookingForward', { user: '新手观察者', project: 'QuickCut' }), color: "text-accent-orange" },
+    { icon: "🎮", text: t('ticker.startedStreaming', { user: 'PixelCrafter', project: 'NoteFlow' }), color: "text-accent-pink" },
+    { icon: "🏆", text: t('ticker.reactions', { user: 'Code Wizard', project: 'QuickCut', count: '2664' }), color: "text-accent-yellow" },
+    { icon: "⚡", text: t('ticker.using', { user: '独立开发者小明', tool: 'Bolt', project: 'TaskForge' }), color: "text-accent-purple" },
+    { icon: "🌟", text: t('ticker.phase', { user: 'AI Artisan', project: 'LangBridge', phase: '语音翻译' }), color: "text-accent-cyan" },
+    { icon: "📦", text: t('ticker.launched', { user: 'Dev Sensei', project: 'CodeQuest' }), color: "text-accent-green" },
+    { icon: "💻", text: t('ticker.using', { user: 'Neural Nomad', tool: 'Copilot', project: 'ReviewBot' }), color: "text-accent-pink" },
+    { icon: "🎯", text: t('ticker.published', { project: 'MindMap AI' }), color: "text-accent-yellow" },
+    { icon: "🔧", text: t('ticker.wantToUseCount', { project: 'ReviewBot', count: '999' }), color: "text-accent-green" },
+    { icon: "🎲", text: t('ticker.building', { user: 'indie_hacker', project: 'PixelQuest', phase: '战斗系统' }), color: "text-accent-purple" },
+  ];
+
   const doubled = [...TICKER_ITEMS, ...TICKER_ITEMS];
 
   return (

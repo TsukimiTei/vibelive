@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { ReactionType, Reactions, REACTION_CONFIG } from "@/lib/types";
+import { useI18n } from "@/lib/i18n/context";
 
 interface ReactionButtonsProps {
   reactions: Reactions;
@@ -12,6 +13,7 @@ export function ReactionButtons({
   reactions: initialReactions,
   size = "md",
 }: ReactionButtonsProps) {
+  const { t } = useI18n();
   const [reactions, setReactions] = useState(initialReactions);
   const [animating, setAnimating] = useState<ReactionType | null>(null);
   const [floats, setFloats] = useState<
@@ -59,7 +61,7 @@ export function ReactionButtons({
                 isSmall ? "text-[7px]" : "text-[9px]"
               }`}
             >
-              {config.label}
+              {t(`reaction.${type}` as any)}
             </span>
             <span
               className={`font-[family-name:var(--font-pixel)] text-accent-yellow ${

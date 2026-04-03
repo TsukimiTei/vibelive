@@ -1,9 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { Stream, CATEGORY_LABELS, PLATFORM_LABELS } from "@/lib/types";
+import { Stream } from "@/lib/types";
 import { ToolBadge } from "./ToolBadge";
 import { ProgressBar } from "./ProgressBar";
 import { ReactionButtons } from "./ReactionButtons";
+import { useI18n } from "@/lib/i18n/context";
 
 interface StreamCardProps {
   stream: Stream;
@@ -11,6 +14,7 @@ interface StreamCardProps {
 }
 
 export function StreamCard({ stream, variant = "default" }: StreamCardProps) {
+  const { t } = useI18n();
   const { streamer, project, status, codingTool, viewers, reactions, stages } =
     stream;
   const isLive = status === "live";
@@ -60,12 +64,12 @@ export function StreamCard({ stream, variant = "default" }: StreamCardProps) {
             )}
             {isAway && (
               <span className="viewer-badge bg-amber-600/80 backdrop-blur-sm">
-                ☕ 暂离
+                {t('status.away')}
               </span>
             )}
             {status === "offline" && (
               <span className="viewer-badge bg-gray-600/80 backdrop-blur-sm">
-                已结束
+                {t('status.offline')}
               </span>
             )}
           </div>
@@ -107,9 +111,9 @@ export function StreamCard({ stream, variant = "default" }: StreamCardProps) {
           </p>
 
           <div className="flex flex-wrap gap-1">
-            <span className="pixel-tag">{CATEGORY_LABELS[project.category]}</span>
+            <span className="pixel-tag">{t(`category.${project.category}` as any)}</span>
             {project.platforms.map((p) => (
-              <span key={p} className="pixel-tag">{PLATFORM_LABELS[p]}</span>
+              <span key={p} className="pixel-tag">{t(`platform.${p}` as any)}</span>
             ))}
           </div>
 
@@ -123,6 +127,7 @@ export function StreamCard({ stream, variant = "default" }: StreamCardProps) {
 }
 
 function FeaturedCard({ stream }: { stream: Stream }) {
+  const { t } = useI18n();
   const { streamer, project, status, codingTool, viewers, reactions, stages } =
     stream;
   const isLive = status === "live";
@@ -167,7 +172,7 @@ function FeaturedCard({ stream }: { stream: Stream }) {
                 <ToolBadge tool={codingTool} />
               </div>
               <span className="font-[family-name:var(--font-pixel)] text-[7px] text-text-secondary bg-bg-primary/60 backdrop-blur-sm px-2 py-1 border border-border-pixel/50">
-                🔥 HOT
+                {t('home.hot')}
               </span>
             </div>
 

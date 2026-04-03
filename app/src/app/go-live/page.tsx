@@ -12,15 +12,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useNickname } from "@/lib/useNickname";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/context";
 
 type BroadcastState = "idle" | "connecting" | "live" | "error";
 type QualityLevel = "720p" | "1080p" | "original" | "ultra";
 
-const QUALITY_MAP: Record<QualityLevel, { preset: VideoPreset; label: string }> = {
-  "720p":     { preset: ScreenSharePresets.h720fps30,  label: "720p" },
-  "1080p":    { preset: ScreenSharePresets.h1080fps30, label: "1080p" },
-  "original": { preset: ScreenSharePresets.original,   label: "原画" },
-  "ultra":    { preset: new VideoPreset(0, 0, 15_000_000, 30, "high"), label: "超清" },
+const QUALITY_MAP: Record<QualityLevel, { preset: VideoPreset; labelKey: string }> = {
+  "720p":     { preset: ScreenSharePresets.h720fps30,  labelKey: "720p" },
+  "1080p":    { preset: ScreenSharePresets.h1080fps30, labelKey: "1080p" },
+  "original": { preset: ScreenSharePresets.original,   labelKey: "goLive.quality.original" },
+  "ultra":    { preset: new VideoPreset(0, 0, 15_000_000, 30, "high"), labelKey: "goLive.quality.ultra" },
 };
 
 const STORAGE_KEY = "vibelive_active_stream";
@@ -33,6 +34,7 @@ interface ActiveStream {
 }
 
 export default function GoLivePage() {
+  const { t } = useI18n();
   const router = useRouter();
   const { nickname } = useNickname();
   const [authChecked, setAuthChecked] = useState(false);
@@ -299,7 +301,15 @@ export default function GoLivePage() {
     }
   };
 
-  const STAGES = ["构思中", "设计中", "编码中", "调试中", "测试中", "发布中", "已完成"];
+  const STAGES: { value: string; labelKey: string }[] = [
+    { value: "构思中", labelKey: "goLive.stage.idea" },
+    { value: "设计中", labelKey: "goLive.stage.design" },
+    { value: "编码中", labelKey: "goLive.stage.coding" },
+    { value: "调试中", labelKey: "goLive.stage.debug" },
+    { value: "测试中", labelKey: "goLive.stage.testing" },
+    { value: "发布中", labelKey: "goLive.stage.deploy" },
+    { value: "已完成", labelKey: "goLive.stage.done" },
+  ];
 
   // Auto-save project info with debounce
   const saveProjectInfo = useCallback(
@@ -351,11 +361,11 @@ export default function GoLivePage() {
             href="/"
             className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary hover:text-accent-cyan transition-colors"
           >
-            ◁ 返回大厅
+            ◁ {t('nav.backToHome')}
           </Link>
           <span className="text-border-pixel">│</span>
           <h1 className="font-[family-name:var(--font-pixel)] text-[14px] text-accent-green glow-green">
-            开播控制台
+            {t('goLive.title')}
           </h1>
         </div>
 
@@ -365,34 +375,34 @@ export default function GoLivePage() {
             <div className="flex items-center gap-2 mb-2">
               <span className="font-[family-name:var(--font-pixel)] text-[8px] text-accent-purple">◈</span>
               <span className="font-[family-name:var(--font-pixel)] text-[9px] text-text-secondary">
-                直播设置
+                {t('goLive.title')}
               </span>
             </div>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-xs text-text-secondary mb-1.5">
-                  房间名（观众将通过此名称加入）
+                  {t('goLive.roomName')}
                 </label>
                 <input
                   type="text"
                   value={roomName}
                   onChange={(e) => setRoomName(e.target.value)}
-                  placeholder="例如: my-coding-stream"
+                  placeholder={t('goLive.roomPlaceholder')}
                   className="w-full bg-bg-primary border-2 border-border-pixel px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/40 focus:border-accent-purple focus:outline-none transition-colors"
                 />
               </div>
 
               {nickname && (
                 <div className="flex items-center gap-2 px-1">
-                  <span className="text-xs text-text-secondary">主播:</span>
+                  <span className="text-xs text-text-secondary">{t('goLive.streamer')}:</span>
                   <span className="text-xs text-accent-cyan">{nickname}</span>
                 </div>
               )}
 
               <div>
                 <label className="block text-xs text-text-secondary mb-1.5">
-                  AI 工具
+                  {t('goLive.tool')}
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {[
@@ -403,19 +413,19 @@ export default function GoLivePage() {
                     { key: "v0", label: "v0" },
                     { key: "bolt", label: "Bolt" },
                     { key: "replit", label: "Replit" },
-                    { key: "other", label: "其他" },
-                  ].map((t) => (
+                    { key: "other", label: t('tool.other') },
+                  ].map((tool) => (
                     <button
-                      key={t.key}
+                      key={tool.key}
                       type="button"
-                      onClick={() => setCodingTool(t.key)}
+                      onClick={() => setCodingTool(tool.key)}
                       className={`px-2.5 py-1.5 text-[10px] border-2 transition-colors ${
-                        codingTool === t.key
+                        codingTool === tool.key
                           ? "border-accent-purple text-accent-purple bg-accent-purple/10"
                           : "border-border-pixel text-text-secondary hover:border-text-secondary"
                       }`}
                     >
-                      {t.label}
+                      {tool.label}
                     </button>
                   ))}
                 </div>
@@ -423,10 +433,10 @@ export default function GoLivePage() {
 
               <div>
                 <label className="block text-xs text-text-secondary mb-1.5">
-                  画质
+                  {t('goLive.quality')}
                 </label>
                 <div className="flex gap-2">
-                  {(Object.entries(QUALITY_MAP) as [QualityLevel, { preset: VideoPreset; label: string }][]).map(([q, { label }]) => (
+                  {(Object.entries(QUALITY_MAP) as [QualityLevel, { preset: VideoPreset; labelKey: string }][]).map(([q, { labelKey }]) => (
                     <button
                       key={q}
                       type="button"
@@ -437,7 +447,7 @@ export default function GoLivePage() {
                           : "border-border-pixel text-text-secondary hover:border-text-secondary"
                       }`}
                     >
-                      {label}
+                      {labelKey.startsWith("goLive.") ? t(labelKey as any) : labelKey}
                     </button>
                   ))}
                 </div>
@@ -446,7 +456,7 @@ export default function GoLivePage() {
               {/* Thumbnail */}
               <div>
                 <label className="block text-xs text-text-secondary mb-1.5">
-                  封面图（可选）
+                  {t('goLive.cover')}
                 </label>
                 <div className="flex items-center gap-3">
                   {thumbnailUrl ? (
@@ -491,7 +501,7 @@ export default function GoLivePage() {
               onClick={startBroadcast}
               className="pixel-btn border-accent-green text-accent-green hover:bg-accent-green hover:text-bg-primary w-full text-[10px] py-3"
             >
-              ▶ 开始直播（屏幕共享）
+              ▶ {t('btn.goLive')}
             </button>
 
             <p className="text-[10px] text-text-secondary/60 text-center">
@@ -569,7 +579,7 @@ export default function GoLivePage() {
               <div className="flex items-center gap-2">
                 <span className="font-[family-name:var(--font-pixel)] text-[8px] text-accent-purple">◈</span>
                 <span className="font-[family-name:var(--font-pixel)] text-[9px] text-text-secondary">
-                  项目信息
+                  {t('goLive.projectInfo')}
                 </span>
                 {saving && (
                   <span className="font-[family-name:var(--font-pixel)] text-[7px] text-accent-yellow ml-auto animate-pulse">
@@ -585,31 +595,31 @@ export default function GoLivePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-text-secondary mb-1">项目名称</label>
+                  <label className="block text-xs text-text-secondary mb-1">{t('goLive.projectName')}</label>
                   <input
                     type="text"
                     value={projectName}
                     onChange={(e) => updateProjectName(e.target.value)}
-                    placeholder="你正在做什么项目？"
+                    placeholder={t('goLive.projectQuestion')}
                     className="w-full bg-bg-primary border border-border-pixel px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/30 focus:border-accent-purple focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-text-secondary mb-1">当前阶段</label>
+                  <label className="block text-xs text-text-secondary mb-1">{t('goLive.projectStage')}</label>
                   <div className="flex flex-wrap gap-1.5">
                     {STAGES.map((s) => (
                       <button
-                        key={s}
+                        key={s.value}
                         type="button"
-                        onClick={() => updateProjectStage(s)}
+                        onClick={() => updateProjectStage(s.value)}
                         className={`px-2 py-1 text-[10px] border transition-colors ${
-                          projectStage === s
+                          projectStage === s.value
                             ? "border-accent-cyan text-accent-cyan bg-accent-cyan/10"
                             : "border-border-pixel text-text-secondary hover:border-text-secondary"
                         }`}
                       >
-                        {s}
+                        {t(s.labelKey as any)}
                       </button>
                     ))}
                   </div>
@@ -617,11 +627,11 @@ export default function GoLivePage() {
               </div>
 
               <div>
-                <label className="block text-xs text-text-secondary mb-1">项目描述</label>
+                <label className="block text-xs text-text-secondary mb-1">{t('goLive.projectDesc')}</label>
                 <textarea
                   value={projectDesc}
                   onChange={(e) => updateProjectDesc(e.target.value)}
-                  placeholder="简单介绍一下你的项目、用了什么技术栈、想解决什么问题..."
+                  placeholder={t('goLive.projectDescPlaceholder')}
                   rows={3}
                   className="w-full bg-bg-primary border border-border-pixel px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary/30 focus:border-accent-purple focus:outline-none transition-colors resize-none"
                 />
@@ -629,7 +639,7 @@ export default function GoLivePage() {
 
               {/* Thumbnail during live */}
               <div>
-                <label className="block text-xs text-text-secondary mb-1">封面图</label>
+                <label className="block text-xs text-text-secondary mb-1">{t('goLive.cover')}</label>
                 <div className="flex items-center gap-3">
                   {thumbnailUrl ? (
                     <div className="relative w-24 h-14 border border-border-pixel overflow-hidden shrink-0 bg-bg-primary">

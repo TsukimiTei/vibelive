@@ -15,6 +15,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useNickname } from "@/lib/useNickname";
+import { useI18n } from "@/lib/i18n/context";
+import {
+  ReactionOverlay,
+  useReactionSystem,
+  REACTION_CONFIG,
+  type ReactionKind,
+  type OverlayBurst,
+  type ComboTier,
+  type ComboState,
+} from "@/components/ReactionOverlay";
 
 // ── Types ────────────────────────────────────
 interface ChatMsg {
@@ -24,20 +34,7 @@ interface ChatMsg {
   time: number;
 }
 
-interface ReactionBurst {
-  id: string;
-  kind: string;
-  x: number;
-}
-
-type ReactionKind = "want_to_use" | "interesting" | "looking_forward";
 type LayoutMode = "theater" | "default" | "fullscreen";
-
-const REACTION_CONFIG: Record<ReactionKind, { label: string; icon: string }> = {
-  want_to_use: { label: "想用", icon: "🚀" },
-  interesting: { label: "有趣", icon: "✨" },
-  looking_forward: { label: "期待", icon: "🔥" },
-};
 
 const CHAT_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const textEncoder = new TextEncoder();
@@ -53,6 +50,7 @@ function PlayerControls({
   layoutMode: LayoutMode;
   onLayoutChange: (mode: LayoutMode) => void;
 }) {
+  const { t } = useI18n();
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [volume, setVolume] = useState(100);
@@ -139,7 +137,7 @@ function PlayerControls({
     >
       <div className="flex items-center gap-3">
         {/* Play / Pause */}
-        <button onClick={togglePause} className="text-white hover:text-accent-cyan transition-colors" title={paused ? "播放" : "暂停"}>
+        <button onClick={togglePause} className="text-white hover:text-accent-cyan transition-colors" title={paused ? t('btn.play') : t('btn.pause')}>
           {paused ? (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           ) : (
@@ -149,7 +147,7 @@ function PlayerControls({
 
         {/* Volume */}
         <div className="relative flex items-center" onMouseEnter={() => setShowVolume(true)} onMouseLeave={() => setShowVolume(false)}>
-          <button onClick={toggleMute} className="text-white hover:text-accent-cyan transition-colors" title={muted ? "取消静音" : "静音"}>
+          <button onClick={toggleMute} className="text-white hover:text-accent-cyan transition-colors" title={muted ? t('btn.unmute') : t('btn.mute')}>
             {muted || volume === 0 ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
             ) : volume < 50 ? (
@@ -174,13 +172,13 @@ function PlayerControls({
 
         {/* Quality */}
         <div className="relative">
-          <button onClick={() => setShowQuality(!showQuality)} className="text-white hover:text-accent-cyan transition-colors text-xs font-[family-name:var(--font-pixel)] text-[8px]" title="清晰度">
+          <button onClick={() => setShowQuality(!showQuality)} className="text-white hover:text-accent-cyan transition-colors text-xs font-[family-name:var(--font-pixel)] text-[8px]" title={t('watch.quality')}>
             HD
           </button>
           {showQuality && (
             <div className="absolute bottom-full right-0 mb-2 pixel-border bg-bg-card py-1 min-w-[100px] z-50">
               {[
-                { label: "自动", value: "auto" as const },
+                { label: t('watch.qualityAuto'), value: "auto" as const },
                 { label: "1080p", value: 1080 },
                 { label: "720p", value: 720 },
                 { label: "480p", value: 480 },
@@ -198,7 +196,7 @@ function PlayerControls({
         </div>
 
         {/* Theater mode (desktop only) */}
-        <button onClick={toggleTheater} className="hidden lg:block text-white hover:text-accent-cyan transition-colors" title={layoutMode === "theater" ? "默认模式" : "剧院模式"}>
+        <button onClick={toggleTheater} className="hidden lg:block text-white hover:text-accent-cyan transition-colors" title={layoutMode === "theater" ? t('watch.layoutDefault') : t('watch.layoutTheater')}>
           {layoutMode === "theater" ? (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm0 8H5V9h14v6z"/></svg>
           ) : (
@@ -207,7 +205,7 @@ function PlayerControls({
         </button>
 
         {/* Fullscreen */}
-        <button onClick={toggleFullscreen} className="text-white hover:text-accent-cyan transition-colors" title={isFullscreen ? "退出全屏" : "全屏"}>
+        <button onClick={toggleFullscreen} className="text-white hover:text-accent-cyan transition-colors" title={isFullscreen ? t('btn.exitFullscreen') : t('btn.fullscreen')}>
           {isFullscreen ? (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>
           ) : (
@@ -223,9 +221,15 @@ function PlayerControls({
 function VideoArea({
   layoutMode,
   onLayoutChange,
+  bursts,
+  showBanner,
+  screenFlash,
 }: {
   layoutMode: LayoutMode;
   onLayoutChange: (mode: LayoutMode) => void;
+  bursts: OverlayBurst[];
+  showBanner: { icon: string; count: number; color: string } | null;
+  screenFlash: boolean;
 }) {
   const tracks = useTracks([Track.Source.ScreenShare], { onlySubscribed: true });
   const participants = useParticipants();
@@ -263,8 +267,9 @@ function VideoArea({
   }
 
   return (
-    <div className="relative w-full h-full bg-bg-primary group" ref={videoContainerRef}>
+    <div className={`relative w-full h-full bg-bg-primary group ${screenFlash ? "screen-flash" : ""}`} ref={videoContainerRef}>
       <VideoTrack trackRef={screenTrack} className="w-full h-full object-contain" />
+      <ReactionOverlay bursts={bursts} showBanner={showBanner} screenFlash={screenFlash} />
 
       {/* HUD */}
       <div className="absolute top-3 left-3 z-20 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -284,11 +289,25 @@ function VideoArea({
 }
 
 // ── Sidebar (Chat / Info / Users tabs) ───────
-const STAGES = ["构思中", "设计中", "编码中", "调试中", "测试中", "发布中", "已完成"];
+const STAGES_DATA = [
+  { value: "构思中", labelKey: "goLive.stage.idea" },
+  { value: "设计中", labelKey: "goLive.stage.design" },
+  { value: "编码中", labelKey: "goLive.stage.coding" },
+  { value: "调试中", labelKey: "goLive.stage.debug" },
+  { value: "测试中", labelKey: "goLive.stage.testing" },
+  { value: "发布中", labelKey: "goLive.stage.deploy" },
+  { value: "已完成", labelKey: "goLive.stage.done" },
+];
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: string }) {
+function Sidebar({ viewerName, roomName, addReaction, combo }: {
+  viewerName: string;
+  roomName: string;
+  addReaction: (kind: ReactionKind) => void;
+  combo: ComboState;
+}) {
+  const { t } = useI18n();
   const room = useRoomContext();
   const participants = useParticipants();
   const [tab, setTab] = useState<"chat" | "info" | "users">("chat");
@@ -307,10 +326,6 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
     }
   });
   const [input, setInput] = useState("");
-  const [reactions, setReactions] = useState<Record<ReactionKind, number>>({
-    want_to_use: 0, interesting: 0, looking_forward: 0,
-  });
-  const [bursts, setBursts] = useState<ReactionBurst[]>([]);
   const [streamInfo, setStreamInfo] = useState<{
     project_name?: string; description?: string; stage?: string; streamer_name?: string; started_at?: string; user_id?: string;
   } | null>(null);
@@ -397,11 +412,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
         } else if (msg.type === "reaction") {
           const kind = msg.kind as ReactionKind;
           if (!REACTION_CONFIG[kind]) return;
-          setReactions((prev) => ({ ...prev, [kind]: (prev[kind] || 0) + 1 }));
-          const icon = REACTION_CONFIG[kind].icon;
-          const id = `${Date.now()}-${Math.random()}`;
-          setBursts((prev) => [...prev, { id, kind: icon, x: 20 + Math.random() * 60 }]);
-          setTimeout(() => setBursts((prev) => prev.filter((b) => b.id !== id)), 2000);
+          addReaction(kind);
         }
       } catch {}
     };
@@ -437,11 +448,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
   const sendReaction = (kind: ReactionKind) => {
     const payload = textEncoder.encode(JSON.stringify({ type: "reaction", kind, user: viewerName }));
     room.localParticipant.publishData(payload, { reliable: true });
-    setReactions((prev) => ({ ...prev, [kind]: (prev[kind] || 0) + 1 }));
-    const icon = REACTION_CONFIG[kind].icon;
-    const id = `${Date.now()}-${Math.random()}`;
-    setBursts((prev) => [...prev, { id, kind: icon, x: 20 + Math.random() * 60 }]);
-    setTimeout(() => setBursts((prev) => prev.filter((b) => b.id !== id)), 2000);
+    addReaction(kind);
   };
 
   const endStream = async () => {
@@ -469,26 +476,26 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
   };
 
   const tabs = [
-    { key: "chat" as const, label: "聊天", icon: "💬" },
-    { key: "info" as const, label: "项目", icon: "◈" },
-    { key: "users" as const, label: `在线 ${participants.length}`, icon: "◉" },
+    { key: "chat" as const, label: t('watch.tabChat'), icon: "💬" },
+    { key: "info" as const, label: t('watch.tabProject'), icon: "◈" },
+    { key: "users" as const, label: `${t('watch.online')} ${participants.length}`, icon: "◉" },
   ];
 
   return (
     <div className="flex flex-col h-full pixel-border bg-bg-card">
       {/* Tabs */}
       <div className="flex border-b border-border-pixel/50 shrink-0">
-        {tabs.map((t) => (
+        {tabs.map((tb) => (
           <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
+            key={tb.key}
+            onClick={() => setTab(tb.key)}
             className={`flex-1 px-2 py-2 text-[10px] font-[family-name:var(--font-pixel)] transition-colors ${
-              tab === t.key
+              tab === tb.key
                 ? "text-accent-cyan border-b-2 border-accent-cyan"
                 : "text-text-secondary hover:text-text-primary"
             }`}
           >
-            <span className="mr-1">{t.icon}</span>{t.label}
+            <span className="mr-1">{tb.icon}</span>{tb.label}
           </button>
         ))}
       </div>
@@ -496,13 +503,6 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
       {/* ── Chat Tab ── */}
       {tab === "chat" && (
         <>
-          <div className="relative h-0">
-            {bursts.map((b) => (
-              <span key={b.id} className="absolute text-2xl pointer-events-none"
-                style={{ left: `${b.x}%`, bottom: 0, animation: "float-up 2s ease-out forwards" }}>{b.kind}</span>
-            ))}
-          </div>
-
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-2 space-y-2 min-h-0">
             {messages.length === 0 && (
               <p className="text-xs text-text-secondary/40 text-center py-8">还没有消息，说点什么吧</p>
@@ -517,26 +517,43 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
             ))}
           </div>
 
-          <div className="px-3 py-2 border-t border-border-pixel/50 flex gap-1.5 shrink-0">
-            {(Object.entries(REACTION_CONFIG) as [ReactionKind, { label: string; icon: string }][]).map(
-              ([kind, { icon }]) => (
-                <button key={kind} onClick={() => sendReaction(kind)}
-                  className="flex-1 flex items-center justify-center gap-1 py-1.5 border border-border-pixel hover:border-accent-purple hover:bg-accent-purple/10 transition-colors text-xs">
-                  <span>{icon}</span>
-                  <span className="text-text-secondary text-[10px]">{reactions[kind] || 0}</span>
-                </button>
-              )
+          {/* Reaction buttons with combo glow */}
+          <div className="px-3 py-2 border-t border-border-pixel/50 flex gap-1 shrink-0">
+            {(Object.entries(REACTION_CONFIG) as [ReactionKind, { label: string; icon: string; color: string; glowVar: string }][]).map(
+              ([kind, { icon, color, glowVar }]) => {
+                const tier = combo[kind]?.tier || 0;
+                const comboClass = tier >= 3 ? "reaction-btn-combo-3" : tier >= 2 ? "reaction-btn-combo-2" : tier >= 1 ? "reaction-btn-combo-1" : "";
+                return (
+                  <button
+                    key={kind}
+                    onClick={() => sendReaction(kind)}
+                    className={`flex-1 flex items-center justify-center gap-0.5 py-1.5 border transition-all text-xs active:scale-90 ${comboClass}`}
+                    style={{
+                      borderColor: tier > 0 ? `var(--${color})` : undefined,
+                      backgroundColor: tier > 0 ? `color-mix(in srgb, var(--${color}) ${10 + tier * 5}%, transparent)` : undefined,
+                      "--glow-color": glowVar,
+                    } as React.CSSProperties}
+                  >
+                    <span className={tier >= 2 ? "text-base" : ""}>{icon}</span>
+                    {tier >= 1 && (
+                      <span className="font-[family-name:var(--font-pixel)] text-[6px]" style={{ color: `var(--${color})` }}>
+                        x{combo[kind]?.timestamps.length || 0}
+                      </span>
+                    )}
+                  </button>
+                );
+              }
             )}
           </div>
 
           <div className="px-3 py-2 border-t border-border-pixel/50 shrink-0">
             <form onSubmit={(e) => { e.preventDefault(); sendChat(); }} className="flex gap-2">
               <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
-                placeholder="发送消息..."
+                placeholder={t('chat.placeholder')}
                 className="flex-1 bg-bg-primary border border-border-pixel px-2 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/30 focus:border-accent-cyan focus:outline-none" />
               <button type="submit"
                 className="px-3 py-1.5 bg-accent-cyan/20 border border-accent-cyan/40 text-accent-cyan text-xs hover:bg-accent-cyan/30 transition-colors">
-                发送
+                {t('chat.send')}
               </button>
             </form>
           </div>
@@ -565,7 +582,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
                       href="/go-live"
                       className="flex-1 text-center py-1.5 text-[10px] font-[family-name:var(--font-pixel)] border border-accent-cyan/40 text-accent-cyan hover:bg-accent-cyan/10 transition-colors"
                     >
-                      开播控制台
+                      {t('goLive.title')}
                     </Link>
                     {!showEndConfirm ? (
                       <button
@@ -581,7 +598,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
                           disabled={ending}
                           className="flex-1 py-1.5 text-[10px] font-[family-name:var(--font-pixel)] bg-accent-pink/20 border border-accent-pink text-accent-pink hover:bg-accent-pink hover:text-white transition-colors disabled:opacity-50"
                         >
-                          {ending ? "结束中..." : "确认下播"}
+                          {ending ? t('btn.ending') : t('btn.confirmEnd')}
                         </button>
                         <button
                           onClick={() => setShowEndConfirm(false)}
@@ -597,13 +614,13 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
 
               {/* Project name */}
               <div>
-                <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">项目名称</span>
+                <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">{t('goLive.projectName')}</span>
                 {isStreamer ? (
                   <input
                     type="text"
                     value={streamInfo.project_name || ""}
                     onChange={(e) => updateField("project_name", e.target.value)}
-                    placeholder="你正在做什么项目？"
+                    placeholder={t('goLive.projectQuestion')}
                     className="w-full mt-1 bg-bg-primary border border-border-pixel px-2 py-1.5 text-sm text-text-primary placeholder:text-text-secondary/30 focus:border-accent-purple focus:outline-none transition-colors"
                   />
                 ) : (
@@ -615,27 +632,31 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
 
               {/* Stage */}
               <div>
-                <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">当前阶段</span>
+                <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">{t('goLive.projectStage')}</span>
                 {isStreamer ? (
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {STAGES.map((s) => (
+                    {STAGES_DATA.map((s) => (
                       <button
-                        key={s}
-                        onClick={() => updateField("stage", s)}
+                        key={s.value}
+                        onClick={() => updateField("stage", s.value)}
                         className={`px-1.5 py-0.5 text-[10px] border transition-colors ${
-                          streamInfo.stage === s
+                          streamInfo.stage === s.value
                             ? "border-accent-cyan text-accent-cyan bg-accent-cyan/10"
                             : "border-border-pixel text-text-secondary hover:border-text-secondary"
                         }`}
                       >
-                        {s}
+                        {t(s.labelKey)}
                       </button>
                     ))}
                   </div>
                 ) : (
                   <p className="mt-1">
                     <span className="px-2 py-0.5 text-xs border border-accent-cyan/40 text-accent-cyan bg-accent-cyan/10">
-                      {streamInfo.stage || "构思中"}
+                      {(() => {
+                        const stageValue = streamInfo.stage || "构思中";
+                        const match = STAGES_DATA.find(s => s.value === stageValue);
+                        return match ? t(match.labelKey) : stageValue;
+                      })()}
                     </span>
                   </p>
                 )}
@@ -643,12 +664,12 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
 
               {/* Description */}
               <div>
-                <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">项目描述</span>
+                <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">{t('goLive.projectDesc')}</span>
                 {isStreamer ? (
                   <textarea
                     value={streamInfo.description || ""}
                     onChange={(e) => updateField("description", e.target.value)}
-                    placeholder="简单介绍一下你的项目..."
+                    placeholder={t('goLive.projectDescPlaceholder')}
                     rows={4}
                     className="w-full mt-1 bg-bg-primary border border-border-pixel px-2 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/30 focus:border-accent-purple focus:outline-none transition-colors resize-none"
                   />
@@ -660,7 +681,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
               </div>
 
               <div className="border-t border-border-pixel/30 pt-3">
-                <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">主播</span>
+                <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary">{t('stream.streamer')}</span>
                 <p className="text-sm text-accent-purple mt-1">{streamInfo.streamer_name}</p>
               </div>
               {streamInfo.started_at && (
@@ -691,7 +712,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
                         : "border-accent-pink text-accent-pink hover:bg-accent-pink hover:text-white"
                     }`}
                   >
-                    {isFollowing ? "✓ 已关注" : "+ 关注"}
+                    {isFollowing ? t('btn.following') : t('btn.follow')}
                   </button>
                   <button
                     onClick={async () => {
@@ -713,7 +734,7 @@ function Sidebar({ viewerName, roomName }: { viewerName: string; roomName: strin
                         : "border-accent-yellow text-accent-yellow hover:bg-accent-yellow hover:text-bg-primary"
                     }`}
                   >
-                    {isFavorited ? "★ 已收藏" : "☆ 收藏"}
+                    {isFavorited ? t('btn.favorited') : t('btn.favorite')}
                   </button>
                 </div>
               )}
@@ -758,23 +779,27 @@ function WatchLayout({
   roomName: string;
 }) {
   const [desktop, setDesktop] = useState(false);
+  const { bursts, combo, showBanner, screenFlash, addReaction } = useReactionSystem();
 
   useEffect(() => {
     const check = () => setDesktop(window.innerWidth >= 1024);
-    check(); // sync on mount
+    check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
+
+  const videoProps = { bursts, showBanner, screenFlash };
+  const sidebarProps = { viewerName: identity, roomName, addReaction, combo };
 
   if (desktop) {
     if (layoutMode === "theater") {
       return (
         <div className="flex flex-1 min-h-0">
           <div className="flex-1 min-w-0 pixel-border-live m-2 mr-0 overflow-hidden">
-            <VideoArea layoutMode={layoutMode} onLayoutChange={onLayoutChange} />
+            <VideoArea layoutMode={layoutMode} onLayoutChange={onLayoutChange} {...videoProps} />
           </div>
           <div className="w-[320px] shrink-0 m-2 flex flex-col">
-            <Sidebar viewerName={identity} roomName={roomName} />
+            <Sidebar {...sidebarProps} />
           </div>
         </div>
       );
@@ -783,10 +808,10 @@ function WatchLayout({
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-[960px] px-4 py-3 space-y-3">
           <div className="pixel-border-live aspect-video overflow-hidden">
-            <VideoArea layoutMode={layoutMode} onLayoutChange={onLayoutChange} />
+            <VideoArea layoutMode={layoutMode} onLayoutChange={onLayoutChange} {...videoProps} />
           </div>
           <div className="h-[400px]">
-            <Sidebar viewerName={identity} roomName={roomName} />
+            <Sidebar {...sidebarProps} />
           </div>
         </div>
       </div>
@@ -798,7 +823,7 @@ function WatchLayout({
     return (
       <div className="flex flex-col flex-1 min-h-0">
         <div className="pixel-border-live m-1 aspect-video overflow-hidden shrink-0">
-          <VideoArea layoutMode="default" onLayoutChange={onLayoutChange} />
+          <VideoArea layoutMode="default" onLayoutChange={onLayoutChange} {...videoProps} />
         </div>
         <div className="px-2 py-1 flex items-center gap-2">
           <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary truncate flex-1">
@@ -817,7 +842,7 @@ function WatchLayout({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 m-1">
-      <Sidebar viewerName={identity} roomName={roomName} />
+      <Sidebar {...sidebarProps} />
     </div>
   );
 }
@@ -828,6 +853,7 @@ export default function WatchPage({
 }: {
   params: Promise<{ room: string }>;
 }) {
+  const { t } = useI18n();
   const { room: roomName } = use(params);
   const { nickname: profileName } = useNickname();
   const [token, setToken] = useState<string | null>(null);
@@ -942,35 +968,35 @@ export default function WatchPage({
   return (
     <div className="ambient-gradient h-screen flex flex-col" data-player-root>
       {/* Top bar */}
-      <div className="flex items-center justify-between px-2 sm:px-4 py-2 hud-panel shrink-0">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <Link href="/" className="font-[family-name:var(--font-pixel)] text-[11px] glow-green text-accent-green hover:opacity-80 transition-opacity shrink-0">
+      <div className="flex items-center justify-between h-11 px-3 sm:px-4 hud-panel shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link href="/" className="font-[family-name:var(--font-pixel)] text-[13px] tracking-widest glow-green text-accent-green hover:opacity-80 transition-opacity shrink-0">
             VIBELIVE
           </Link>
-          <span className="text-border-pixel">│</span>
-          <span className="font-[family-name:var(--font-pixel)] text-[10px] sm:text-[12px] text-text-primary truncate">
+          <span className="w-px h-4 bg-border-pixel/60 shrink-0" />
+          <span className="text-sm text-text-primary truncate">
             {decodeURIComponent(roomName)}
           </span>
         </div>
 
         {/* Mobile panel toggle */}
-        <div className="flex items-center gap-1 lg:hidden">
-          <button
-            onClick={() => setMobilePanel("video")}
-            className={`px-2 py-1 text-[9px] font-[family-name:var(--font-pixel)] border transition-colors ${
-              mobilePanel === "video" ? "border-accent-cyan text-accent-cyan" : "border-border-pixel text-text-secondary"
-            }`}
-          >
-            画面
-          </button>
-          <button
-            onClick={() => setMobilePanel("chat")}
-            className={`px-2 py-1 text-[9px] font-[family-name:var(--font-pixel)] border transition-colors ${
-              mobilePanel === "chat" ? "border-accent-cyan text-accent-cyan" : "border-border-pixel text-text-secondary"
-            }`}
-          >
-            聊天
-          </button>
+        <div className="flex items-center gap-0.5 lg:hidden bg-bg-primary/60 rounded-sm p-0.5">
+          {([
+            { key: "video" as const, icon: "▶", label: "画面" },
+            { key: "chat" as const, icon: "💬", label: "聊天" },
+          ]).map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setMobilePanel(t.key)}
+              className={`px-2.5 py-1 text-[9px] font-[family-name:var(--font-pixel)] transition-all ${
+                mobilePanel === t.key
+                  ? "bg-accent-cyan/15 text-accent-cyan shadow-[0_0_6px_var(--glow-cyan)]"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              <span className="mr-1">{t.icon}</span>{t.label}
+            </button>
+          ))}
         </div>
       </div>
 

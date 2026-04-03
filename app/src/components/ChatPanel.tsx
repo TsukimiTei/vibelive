@@ -3,8 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import { ChatMessage } from "@/lib/types";
 import { MOCK_CHAT_MESSAGES } from "@/lib/mock-data";
+import { useI18n } from "@/lib/i18n/context";
 
 export function ChatPanel() {
+  const { t } = useI18n();
   const [messages, setMessages] = useState<ChatMessage[]>(MOCK_CHAT_MESSAGES);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -20,7 +22,7 @@ export function ChatPanel() {
     const newMsg: ChatMessage = {
       id: `m-${Date.now()}`,
       userId: "me",
-      username: "你",
+      username: t('chat.you'),
       avatarUrl: "",
       content: input,
       timestamp: new Date().toISOString(),
@@ -79,7 +81,7 @@ export function ChatPanel() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            placeholder="说点什么..."
+            placeholder={t('chat.placeholder')}
             className="flex-1 bg-bg-primary/80 border border-border-pixel/50 px-2.5 py-1.5 text-xs text-text-primary placeholder:text-text-secondary/30 outline-none focus:border-accent-purple/50 transition-colors"
           />
           <button

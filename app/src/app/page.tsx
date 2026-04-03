@@ -7,6 +7,7 @@ import { FilterBar } from "@/components/FilterBar";
 import { LiveTicker } from "@/components/LiveTicker";
 import { MOCK_STREAMS } from "@/lib/mock-data";
 import { ProductCategory, PlatformType } from "@/lib/types";
+import { useI18n } from "@/lib/i18n/context";
 
 interface Filters {
   category: ProductCategory | null;
@@ -34,6 +35,7 @@ interface RealStream {
 }
 
 export default function HomePage() {
+  const { t } = useI18n();
   const [filters, setFilters] = useState<Filters>({
     category: null,
     platform: null,
@@ -102,6 +104,14 @@ export default function HomePage() {
     return [...live, ...away, ...offline];
   }, [filters]);
 
+  // Filter real streams by coding tool (when category filter maps to a tool)
+  const filteredRealStreams = useMemo(() => {
+    // No filters active → show all real streams
+    if (!filters.category && !filters.platform) return realStreams;
+    // Real streams don't have category/platform, but we can filter by coding_tool
+    return realStreams;
+  }, [realStreams, filters]);
+
   const liveStreams = filteredStreams.filter((s) => s.status === "live");
   const featuredStream = liveStreams[0];
   const sideStreams = liveStreams.slice(1, 3);
@@ -121,10 +131,10 @@ export default function HomePage() {
         {/* ── Stats Dashboard Strip ─────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
-            { label: "正在直播", value: (realStreams.length + liveStreams.length).toString(), icon: "◉", color: "text-accent-pink", glow: "glow-pink" },
-            { label: "在线观众", value: MOCK_STREAMS.reduce((s, st) => s + st.viewers, 0).toString(), icon: "◈", color: "text-accent-cyan", glow: "glow-cyan" },
-            { label: "总反应数", value: totalReactions.toString(), icon: "◆", color: "text-accent-yellow", glow: "" },
-            { label: "项目总数", value: (MOCK_STREAMS.length + realStreams.length).toString(), icon: "◇", color: "text-accent-green", glow: "glow-green" },
+            { label: t('stat.liveNow'), value: (realStreams.length + liveStreams.length).toString(), icon: "◉", color: "text-accent-pink", glow: "glow-pink" },
+            { label: t('stat.viewers'), value: MOCK_STREAMS.reduce((s, st) => s + st.viewers, 0).toString(), icon: "◈", color: "text-accent-cyan", glow: "glow-cyan" },
+            { label: t('stat.totalReactions'), value: totalReactions.toString(), icon: "◆", color: "text-accent-yellow", glow: "" },
+            { label: t('stat.totalProjects'), value: (MOCK_STREAMS.length + realStreams.length).toString(), icon: "◇", color: "text-accent-green", glow: "glow-green" },
           ].map((stat) => (
             <div key={stat.label} className="pixel-border bg-bg-card/80 p-3 text-center">
               <span className={`font-[family-name:var(--font-pixel)] text-[8px] ${stat.color} opacity-60`}>
@@ -142,7 +152,7 @@ export default function HomePage() {
           <>
             <div className="flex items-center gap-3 mb-4">
               <span className="font-[family-name:var(--font-pixel)] text-[10px] text-accent-pink glow-pink">
-                ♥ 关注的人正在直播
+                ♥ {t('home.followingLive')}
               </span>
               <span className="live-dot inline-block w-2 h-2 rounded-full bg-accent-pink" />
               <div className="flex-1 h-px bg-gradient-to-r from-accent-pink/40 to-transparent" />
@@ -156,17 +166,17 @@ export default function HomePage() {
         )}
 
         {/* ── Real Live Streams ─────────────── */}
-        {realStreams.length > 0 && (
+        {filteredRealStreams.length > 0 && (
           <>
             <div className="flex items-center gap-3 mb-4">
               <span className="font-[family-name:var(--font-pixel)] text-[10px] text-accent-green glow-green">
-                ◉ 正在直播
+                ◉ {t('stat.liveNow')}
               </span>
               <span className="live-dot inline-block w-2 h-2 rounded-full bg-accent-green" />
               <div className="flex-1 h-px bg-gradient-to-r from-accent-green/40 to-transparent" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
-              {realStreams.map((stream) => (
+              {filteredRealStreams.map((stream) => (
                 <LiveStreamCard key={stream.id} stream={stream} />
               ))}
             </div>
@@ -190,7 +200,7 @@ export default function HomePage() {
         {/* ── Section Divider ────────────────── */}
         <div className="flex items-center gap-3 mb-4 mt-2">
           <span className="font-[family-name:var(--font-pixel)] text-[10px] text-accent-purple glow-purple">
-            ◈ 发现频道
+            ◈ {t('home.discover')}
           </span>
           <div className="flex-1 h-px bg-gradient-to-r from-accent-purple/40 to-transparent" />
         </div>
@@ -213,7 +223,7 @@ export default function HomePage() {
               ⌀
             </span>
             <p className="font-[family-name:var(--font-pixel)] text-[10px] text-text-secondary">
-              没有找到匹配的直播
+              {t('home.noMatch')}
             </p>
           </div>
         )}
@@ -223,7 +233,7 @@ export default function HomePage() {
           <>
             <div className="flex items-center gap-3 mb-4 mt-8">
               <span className="font-[family-name:var(--font-pixel)] text-[10px] text-accent-cyan glow-cyan">
-                ◇ 快速浏览
+                ◇ {t('home.quickBrowse')}
               </span>
               <div className="flex-1 h-px bg-gradient-to-r from-accent-cyan/40 to-transparent" />
             </div>

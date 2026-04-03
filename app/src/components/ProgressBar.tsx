@@ -1,4 +1,7 @@
+"use client";
+
 import { ProjectStage } from "@/lib/types";
+import { useI18n } from "@/lib/i18n/context";
 
 interface ProgressBarProps {
   stages: ProjectStage[];
@@ -6,6 +9,7 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ stages, compact = false }: ProgressBarProps) {
+  const { t } = useI18n();
   const completedCount = stages.filter((s) => s.completed).length;
   const progress = (completedCount / stages.length) * 100;
 
@@ -29,7 +33,7 @@ export function ProgressBar({ stages, compact = false }: ProgressBarProps) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="font-[family-name:var(--font-pixel)] text-[10px] text-text-secondary">
-          开发进度
+          {t('stream.progress')}
         </span>
         <span className="font-[family-name:var(--font-pixel)] text-[10px] text-accent-cyan">
           {Math.round(progress)}%

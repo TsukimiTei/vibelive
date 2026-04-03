@@ -7,6 +7,8 @@ import {
   CATEGORY_LABELS,
   PLATFORM_LABELS,
 } from "@/lib/types";
+import { useI18n } from "@/lib/i18n/context";
+import type { TranslationKey } from "@/lib/i18n/zh";
 
 interface FilterBarProps {
   onFilterChange: (filters: {
@@ -17,6 +19,7 @@ interface FilterBarProps {
 }
 
 export function FilterBar({ onFilterChange }: FilterBarProps) {
+  const { t } = useI18n();
   const [activeCategory, setActiveCategory] =
     useState<ProductCategory | null>(null);
   const [activePlatform, setActivePlatform] =
@@ -40,21 +43,15 @@ export function FilterBar({ onFilterChange }: FilterBarProps) {
     onFilterChange({ category: activeCategory, platform: activePlatform, sortBy: s });
   };
 
-  const categories = Object.entries(CATEGORY_LABELS) as [
-    ProductCategory,
-    string,
-  ][];
-  const platforms = Object.entries(PLATFORM_LABELS) as [
-    PlatformType,
-    string,
-  ][];
+  const categories = Object.keys(CATEGORY_LABELS) as ProductCategory[];
+  const platforms = Object.keys(PLATFORM_LABELS) as PlatformType[];
 
   return (
     <div className="space-y-3">
       {/* Categories */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary mr-1">
-          分类
+          {t('filter.category')}
         </span>
         <button
           onClick={() => handleCategory(null)}
@@ -62,9 +59,9 @@ export function FilterBar({ onFilterChange }: FilterBarProps) {
             activeCategory === null ? "filter-chip-active" : "hover:text-text-primary"
           }`}
         >
-          全部
+          {t('filter.all')}
         </button>
-        {categories.map(([key, label]) => (
+        {categories.map((key) => (
           <button
             key={key}
             onClick={() => handleCategory(key)}
@@ -74,7 +71,7 @@ export function FilterBar({ onFilterChange }: FilterBarProps) {
                 : "hover:text-text-primary"
             }`}
           >
-            {label}
+            {t(`category.${key}` as TranslationKey)}
           </button>
         ))}
       </div>
@@ -82,7 +79,7 @@ export function FilterBar({ onFilterChange }: FilterBarProps) {
       {/* Platforms */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary mr-1">
-          平台
+          {t('filter.platform')}
         </span>
         <button
           onClick={() => handlePlatform(null)}
@@ -90,9 +87,9 @@ export function FilterBar({ onFilterChange }: FilterBarProps) {
             activePlatform === null ? "filter-chip-active" : "hover:text-text-primary"
           }`}
         >
-          全部
+          {t('filter.all')}
         </button>
-        {platforms.map(([key, label]) => (
+        {platforms.map((key) => (
           <button
             key={key}
             onClick={() => handlePlatform(key)}
@@ -102,7 +99,7 @@ export function FilterBar({ onFilterChange }: FilterBarProps) {
                 : "hover:text-text-primary"
             }`}
           >
-            {label}
+            {t(`platform.${key}` as TranslationKey)}
           </button>
         ))}
       </div>
@@ -110,12 +107,12 @@ export function FilterBar({ onFilterChange }: FilterBarProps) {
       {/* Sort */}
       <div className="flex items-center gap-2">
         <span className="font-[family-name:var(--font-pixel)] text-[8px] text-text-secondary mr-1">
-          排序
+          {t('filter.sort')}
         </span>
         {[
-          { key: "viewers" as const, label: "观看最多" },
-          { key: "reactions" as const, label: "最热反应" },
-          { key: "recent" as const, label: "最新开始" },
+          { key: "viewers" as const, label: t('filter.sortViewers') },
+          { key: "reactions" as const, label: t('filter.sortReactions') },
+          { key: "recent" as const, label: t('filter.sortRecent') },
         ].map((opt) => (
           <button
             key={opt.key}

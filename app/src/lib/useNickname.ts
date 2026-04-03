@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/context";
 
 /**
  * Returns the user's nickname from Supabase profile.
@@ -9,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
  * Returns null while loading, empty string if not logged in.
  */
 export function useNickname() {
+  const { t } = useI18n();
   const [nickname, setNickname] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -31,7 +33,7 @@ export function useNickname() {
         user.user_metadata?.full_name ||
         user.user_metadata?.name ||
         user.email?.split("@")[0] ||
-        "用户";
+        t('misc.user');
       setNickname(name);
 
       // Then try to get display_name from profiles table (may be customized)

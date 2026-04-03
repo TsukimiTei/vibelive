@@ -1,0 +1,260 @@
+export const zh = {
+  // ── Navigation ────────────────────────────
+  "nav.home": "大厅",
+  "nav.explore": "探索",
+  "nav.profile": "我的",
+  "nav.goLive": "开播",
+  "nav.myStream": "我的直播",
+  "nav.login": "登录",
+  "nav.logout": "退出登录",
+  "nav.profilePage": "个人主页",
+  "nav.live": "LIVE",
+  "nav.online": "在线",
+  "nav.notifications": "通知",
+  "nav.noNotifications": "暂无通知",
+  "nav.loading": "加载中...",
+  "nav.markAllRead": "全部已读",
+  "nav.viewAll": "查看全部通知",
+  "nav.unread": "未读",
+  "nav.back": "返回",
+  "nav.backToHome": "返回大厅",
+
+  // ── Buttons ───────────────────────────────
+  "btn.follow": "+ 关注",
+  "btn.following": "已关注",
+  "btn.favorite": "☆ 收藏",
+  "btn.favorited": "★ 已收藏",
+  "btn.enterStream": "▶ 进入直播间",
+  "btn.viewProject": "查看项目",
+  "btn.tryIt": "🚀 试用",
+  "btn.send": "发送消息",
+  "btn.goLive": "开始直播",
+  "btn.confirmEnd": "确认下播",
+  "btn.ending": "结束中...",
+  "btn.play": "播放",
+  "btn.pause": "暂停",
+  "btn.mute": "静音",
+  "btn.unmute": "取消静音",
+  "btn.fullscreen": "全屏",
+  "btn.exitFullscreen": "退出全屏",
+  "btn.goExplore": "去大厅看看",
+
+  // ── Status ────────────────────────────────
+  "status.live": "直播中",
+  "status.away": "☕ 暂离",
+  "status.offline": "已结束",
+  "status.screenShare": "屏幕共享中",
+  "status.screenShareLive": "屏幕共享直播中",
+  "status.connecting": "连接中...",
+
+  // ── Stats ─────────────────────────────────
+  "stat.liveNow": "正在直播",
+  "stat.viewers": "在线观众",
+  "stat.totalReactions": "总反应数",
+  "stat.totalProjects": "项目总数",
+  "stat.viewers_label": "观众",
+  "stat.totalReaction": "总反应",
+
+  // ── Home Page ─────────────────────────────
+  "home.followingLive": "关注的人正在直播",
+  "home.discover": "发现频道",
+  "home.quickBrowse": "快速浏览",
+  "home.noMatch": "没有找到匹配的直播",
+  "home.hot": "🔥 HOT",
+
+  // ── Explore Page ──────────────────────────
+  "explore.title": "EXPLORE",
+  "explore.subtitle": "拖拽旋转 · 滚轮缩放 · 点击探索",
+  "explore.projects": "项目",
+  "explore.rotate": "← → 旋转",
+  "explore.zoom": "↑ ↓ 缩放",
+  "explore.drag": "DRAG 自由旋转",
+  "explore.close": "ESC 关闭",
+  "explore.progress": "开发进度",
+
+  // ── Filter ────────────────────────────────
+  "filter.category": "分类",
+  "filter.platform": "平台",
+  "filter.sort": "排序",
+  "filter.all": "全部",
+  "filter.sortViewers": "观看最多",
+  "filter.sortReactions": "最热反应",
+  "filter.sortRecent": "最新开始",
+
+  // ── Categories ────────────────────────────
+  "category.notes": "笔记",
+  "category.productivity": "效率",
+  "category.marketing": "营销",
+  "category.video": "视频",
+  "category.social": "社交",
+  "category.dev-tools": "开发工具",
+  "category.ai": "AI",
+  "category.gaming": "游戏",
+  "category.education": "教育",
+  "category.other": "其他",
+
+  // ── Platforms ──────────────────────────────
+  "platform.web": "网页",
+  "platform.mobile": "APP",
+  "platform.desktop": "桌面端",
+  "platform.extension": "浏览器插件",
+  "platform.api": "API",
+
+  // ── Tools ─────────────────────────────────
+  "tool.cursor": "Cursor",
+  "tool.copilot": "GitHub Copilot",
+  "tool.windsurf": "Windsurf",
+  "tool.claude-code": "Claude Code",
+  "tool.v0": "v0",
+  "tool.bolt": "Bolt",
+  "tool.replit": "Replit",
+  "tool.other": "其他",
+
+  // ── Reactions ─────────────────────────────
+  "reaction.want_to_use": "想用",
+  "reaction.interesting": "有趣",
+  "reaction.looking_forward": "期待",
+
+  // ── Profile Page ──────────────────────────
+  "profile.tab.streams": "我的直播",
+  "profile.tab.following": "关注",
+  "profile.tab.followers": "粉丝",
+  "profile.tab.favorites": "收藏",
+  "profile.tab.achievements": "成就徽章",
+  "profile.emptyStreams": "还没有直播记录",
+  "profile.emptyFollowing": "还没有关注任何主播",
+  "profile.emptyFollowers": "还没有人关注你",
+  "profile.emptyFavorites": "还没有收藏任何项目",
+  "profile.unknownUser": "未知用户",
+  "profile.followers": "粉丝",
+  "profile.following": "关注",
+
+  // ── Achievements ──────────────────────────
+  "achievement.first_watch.name": "初见",
+  "achievement.first_watch.desc": "观看第一场直播",
+  "achievement.try_10.name": "尝鲜者",
+  "achievement.try_10.desc": "对 10 个项目点了「想用」",
+  "achievement.watch_10h.name": "忠实观众",
+  "achievement.watch_10h.desc": "累计观看 10 小时",
+  "achievement.fav_5.name": "收藏家",
+  "achievement.fav_5.desc": "收藏 5 个项目",
+  "achievement.streak_7.name": "全勤",
+  "achievement.streak_7.desc": "连续 7 天观看直播",
+  "achievement.witness_10.name": "钻石眼",
+  "achievement.witness_10.desc": "见证 10 个项目上线",
+
+  // ── Go Live Page ──────────────────────────
+  "goLive.title": "直播设置",
+  "goLive.roomName": "房间名（观众将通过此名称加入）",
+  "goLive.roomPlaceholder": "例如: my-coding-stream",
+  "goLive.tool": "AI 工具",
+  "goLive.quality": "画质",
+  "goLive.cover": "封面图（可选）",
+  "goLive.streamer": "主播",
+  "goLive.projectInfo": "项目信息",
+  "goLive.projectName": "项目名称",
+  "goLive.projectStage": "当前阶段",
+  "goLive.projectDesc": "项目描述",
+  "goLive.projectQuestion": "你正在做什么项目？",
+  "goLive.projectDescPlaceholder": "简单介绍一下你的项目、用了什么技术栈、想解决什么问题...",
+  "goLive.quality.original": "原画",
+  "goLive.quality.ultra": "超清",
+  "goLive.stage.idea": "构思中",
+  "goLive.stage.design": "设计中",
+  "goLive.stage.coding": "编码中",
+  "goLive.stage.debug": "调试中",
+  "goLive.stage.testing": "测试中",
+  "goLive.stage.deploy": "发布中",
+  "goLive.stage.done": "已完成",
+
+  // ── Stream Detail ─────────────────────────
+  "stream.projectInfo": "项目信息",
+  "stream.streamer": "主播",
+  "stream.progress": "开发进度",
+  "stream.awayTitle": "主播暂时离开",
+  "stream.awayDesc": "请稍候，直播很快恢复",
+  "stream.completedTitle": "项目已完成",
+  "stream.tryProduct": "试用成品",
+  "stream.totalReactions": "总反应",
+  "stream.hideChat": "隐藏聊天",
+  "stream.showChat": "显示聊天",
+
+  // ── Watch Page ────────────────────────────
+  "watch.quality": "清晰度",
+  "watch.qualityAuto": "自动",
+  "watch.layoutDefault": "默认模式",
+  "watch.layoutTheater": "剧院模式",
+  "watch.tabChat": "聊天",
+  "watch.tabProject": "项目",
+  "watch.tabVideo": "画面",
+  "watch.online": "在线",
+  "watch.enterNickname": "输入你的昵称",
+
+  // ── Chat ──────────────────────────────────
+  "chat.placeholder": "说点什么...",
+  "chat.send": "发送",
+  "chat.you": "你",
+
+  // ── Login Page ────────────────────────────
+  "login.title": "登录你的账号",
+  "login.titleRegister": "创建新账号",
+  "login.google": "Google 登录",
+  "login.email": "邮箱",
+  "login.password": "密码",
+  "login.passwordHint": "至少 6 位",
+  "login.submit": "邮箱登录",
+  "login.submitRegister": "注册账号",
+  "login.processing": "处理中...",
+  "login.noAccount": "还没有账号？",
+  "login.hasAccount": "已有账号？",
+  "login.register": "注册",
+  "login.login": "登录",
+  "login.registerSuccess": "注册成功！请查收邮箱中的确认链接。",
+
+  // ── Notifications ─────────────────────────
+  "notify.title": "通知中心",
+  "notify.follow": "关注了你",
+  "notify.live": "开始直播",
+  "notify.favorite": "收藏了你的直播",
+  "notify.empty": "暂无通知",
+
+  // ── Time ──────────────────────────────────
+  "time.justNow": "刚刚",
+  "time.minutesAgo": "{n}分钟前",
+  "time.hoursAgo": "{n}小时前",
+  "time.daysAgo": "{n}天前",
+  "time.hoursMinutes": "{h}小时{m}分钟",
+  "time.minutes": "{m}分钟",
+
+  // ── Ticker ────────────────────────────────
+  "ticker.wantToUse": "{user} 对 {project} 点了「想用」",
+  "ticker.interesting": "{user} 觉得 {project} 「有趣」",
+  "ticker.lookingForward": "{user} 「期待」{project} 上线",
+  "ticker.startedStreaming": "{user} 开始直播 {project}",
+  "ticker.reactions": "{user} 的 {project} 获得 {count} 个反应",
+  "ticker.using": "{user} 正在用 {tool} 开发 {project}",
+  "ticker.phase": "{user} 的 {project} 进入{phase}阶段",
+  "ticker.launched": "{user} 的 {project} 已上线！",
+  "ticker.published": "{project} 已发布 — 快去试用！",
+  "ticker.wantToUseCount": "{project} 获得 {count} 个「想用」反应",
+  "ticker.building": "{user} 的 {project} 正在构建{phase}",
+
+  // ── Meta ──────────────────────────────────
+  "meta.title": "Vibelive — AI 编码直播平台",
+  "meta.description": "观看 AI 实时写代码，发现正在被创造的下一个产品",
+
+  // ── Errors ────────────────────────────────
+  "error.notConfigured": "服务未配置",
+  "error.notLoggedIn": "未登录",
+  "error.badRequest": "请求格式错误",
+  "error.loginRequired": "开播需要登录",
+  "error.joinFailed": "加入失败",
+  "error.connectFailed": "连接失败",
+  "error.tokenFailed": "获取 token 失败",
+
+  // ── Misc ──────────────────────────────────
+  "misc.user": "用户",
+  "misc.anonymous": "匿名",
+} as const;
+
+export type TranslationKey = keyof typeof zh;

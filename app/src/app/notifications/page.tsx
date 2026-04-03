@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/context";
 
 interface Notification {
   id: string;
@@ -17,13 +18,14 @@ interface Notification {
   created_at: string;
 }
 
-const TYPE_CONFIG = {
-  follow: { icon: "♥", verb: "关注了你", color: "text-accent-pink" },
-  stream_live: { icon: "▶", verb: "开始直播", color: "text-accent-green" },
-  favorite: { icon: "★", verb: "收藏了你的直播", color: "text-accent-yellow" },
+const TYPE_CONFIG_KEYS = {
+  follow: { icon: "♥", verbKey: "notify.follow", color: "text-accent-pink" },
+  stream_live: { icon: "▶", verbKey: "notify.live", color: "text-accent-green" },
+  favorite: { icon: "★", verbKey: "notify.favorite", color: "text-accent-yellow" },
 };
 
 export default function NotificationsPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,12 +72,12 @@ export default function NotificationsPage() {
   const timeAgo = (ts: string) => {
     const diff = Date.now() - new Date(ts).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "刚刚";
-    if (mins < 60) return `${mins}分钟前`;
+    if (mins < 1) return t('time.justNow');
+    if (mins < 60) return t('time.minutesAgo', { n: mins });
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}小时前`;
+    if (hours < 24) return t('time.hoursAgo', { n: hours });
     const days = Math.floor(hours / 24);
-    if (days < 30) return `${days}天前`;
+    if (days < 30) return t('time.daysAgo', { n: days });
     return new Date(ts).toLocaleDateString("zh-CN");
   };
 
@@ -103,7 +105,7 @@ export default function NotificationsPage() {
             </Link>
             <span className="text-border-pixel">│</span>
             <h1 className="font-[family-name:var(--font-pixel)] text-[14px] text-text-primary">
-              通知中心
+              {t('notify.title')}
             </h1>
             {unreadCount > 0 && (
               <span className="font-[family-name:var(--font-pixel)] text-[8px] text-accent-pink bg-accent-pink/10 border border-accent-pink/30 px-2 py-0.5">
@@ -126,13 +128,13 @@ export default function NotificationsPage() {
           <div className="pixel-border bg-bg-card p-12 text-center">
             <span className="text-3xl block mb-3 opacity-40">🔔</span>
             <p className="font-[family-name:var(--font-pixel)] text-[9px] text-text-secondary">
-              暂无通知
+              {t('notify.empty')}
             </p>
           </div>
         ) : (
           <div className="space-y-1">
             {notifications.map((n) => {
-              const config = TYPE_CONFIG[n.type];
+              const config = TYPE_CONFIG_KEYS[n.type];
               const isUnread = !n.read_at;
 
               return (
@@ -163,7 +165,7 @@ export default function NotificationsPage() {
                         {config.icon} {n.actor_name}
                       </span>
                       {" "}
-                      <span className="text-text-secondary">{config.verb}</span>
+                      <span className="text-text-secondary">{t(config.verbKey as any)}</span>
                       {n.target_title && n.type !== "follow" && (
                         <>
                           {" "}

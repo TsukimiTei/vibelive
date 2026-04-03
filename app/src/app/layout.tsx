@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
+import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "Vibelive — AI 编码直播平台",
-  description: "观看 AI 实时写代码，发现正在被创造的下一个产品",
+  title: "Vibelive — AI Coding Livestream",
+  description: "Watch AI write code in real-time. Discover the next product being built.",
 };
 
 export default function RootLayout({
@@ -21,8 +22,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-        <Navbar />
-        <main className="flex-1">{children}</main>
+        <Providers>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+        </Providers>
       </body>
     </html>
   );
