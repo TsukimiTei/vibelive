@@ -535,9 +535,9 @@ export default function ExplorePage() {
     return () => cancelAnimationFrame(animRef.current);
   }, [mounted, angleStep, radius, streams, updateReticleAppearance]);
 
-  // ── Mouse handlers (no setState for position) ──
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
+  // ── Mouse tracking (window-level, works over DetailPanel) ──
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
       if (reticleRef.current) {
         reticleRef.current.style.left = `${e.clientX}px`;
         reticleRef.current.style.top = `${e.clientY}px`;
@@ -557,9 +557,11 @@ export default function ExplorePage() {
         const delta = (e.clientX - dragStartRef.current) * 0.004;
         rotationRef.current = rotationStartRef.current + delta;
       }
-    },
-    [updateReticleAppearance]
-  );
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    return () => window.removeEventListener("mousemove", onMouseMove);
+  }, [updateReticleAppearance]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (selectedStreamRef.current) return;
@@ -624,9 +626,8 @@ export default function ExplorePage() {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 overflow-hidden bg-[#030310] select-none"
+      className="fixed inset-0 overflow-hidden bg-[#030310] select-none [&_*]:!cursor-none"
       style={{ cursor: "none", perspective: "1000px" }}
-      onMouseMove={handleMouseMove}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
