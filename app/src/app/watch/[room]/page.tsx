@@ -63,7 +63,7 @@ function PlayerControls({
     onlySubscribed: true,
   });
 
-  const screenTrack = tracks.find((t) => t.source === Track.Source.ScreenShare);
+  const screenTrack = tracks.find((tr) => tr.source === Track.Source.ScreenShare);
 
   // Sync fullscreen state
   useEffect(() => {
@@ -236,7 +236,7 @@ function VideoArea({
   const viewerCount = Math.max(0, participants.length - 1);
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
 
-  const screenTrack = tracks.find((t) => t.source === Track.Source.ScreenShare);
+  const screenTrack = tracks.find((tr) => tr.source === Track.Source.ScreenShare);
 
   // Capture the video element from VideoTrack via callback ref
   const videoContainerRef = useCallback((node: HTMLDivElement | null) => {
@@ -645,7 +645,7 @@ function Sidebar({ viewerName, roomName, addReaction, combo }: {
                             : "border-border-pixel text-text-secondary hover:border-text-secondary"
                         }`}
                       >
-                        {t(s.labelKey)}
+                        {t(s.labelKey as any)}
                       </button>
                     ))}
                   </div>
@@ -655,7 +655,7 @@ function Sidebar({ viewerName, roomName, addReaction, combo }: {
                       {(() => {
                         const stageValue = streamInfo.stage || "构思中";
                         const match = STAGES_DATA.find(s => s.value === stageValue);
-                        return match ? t(match.labelKey) : stageValue;
+                        return match ? t(match.labelKey as any) : stageValue;
                       })()}
                     </span>
                   </p>
@@ -834,7 +834,7 @@ function WatchLayout({
             onClick={() => onMobilePanelChange("chat")}
             className="px-2 py-1 text-[9px] border border-accent-cyan text-accent-cyan font-[family-name:var(--font-pixel)]"
           >
-            💬 聊天
+            💬 {t('watch.tabChat')}
           </button>
         </div>
       </div>

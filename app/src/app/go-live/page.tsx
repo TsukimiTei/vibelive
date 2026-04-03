@@ -223,7 +223,7 @@ export default function GoLivePage() {
       startTimer(now);
     } catch (err) {
       setState("error");
-      setError(err instanceof Error ? err.message : "连接失败");
+      setError(err instanceof Error ? err.message : t('error.connectFailed'));
     }
   }, [roomName, nickname, quality, codingTool]);
 
