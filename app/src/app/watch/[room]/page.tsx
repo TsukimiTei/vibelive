@@ -971,8 +971,9 @@ export default function WatchPage({
       {/* Top bar */}
       <div className="flex items-center justify-between h-11 px-3 sm:px-4 hud-panel shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <Link href="/" className="font-[family-name:var(--font-pixel)] text-[13px] tracking-widest glow-green text-accent-green hover:opacity-80 transition-opacity shrink-0">
-            VIBELIVE
+          <Link href="/" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity shrink-0">
+            <img src="/images/logo.png" alt="VibeLive" className="w-5 h-5" />
+            <span className="font-[family-name:var(--font-pixel)] text-[13px] tracking-widest glow-green text-accent-green">VIBELIVE</span>
           </Link>
           <span className="w-px h-4 bg-border-pixel/60 shrink-0" />
           <span className="text-sm text-text-primary truncate">

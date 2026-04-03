@@ -178,6 +178,7 @@ export function Navbar() {
         {/* Left: Logo + Stats */}
         <div className="flex items-center gap-5">
           <Link href="/" className="flex items-center gap-2 glitch-hover">
+            <img src="/images/logo.png" alt="VibeLive" className="w-6 h-6 shrink-0" />
             <span className="font-[family-name:var(--font-pixel)] text-[13px] glow-green tracking-widest text-accent-green">
               VIBELIVE
             </span>

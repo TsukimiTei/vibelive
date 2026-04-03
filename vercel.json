@@ -1,6 +1,6 @@
 {
-  "installCommand": "cd app && npm install",
   "buildCommand": "cd app && npm run build",
-  "outputDirectory": "app/.next",
-  "framework": "nextjs"
+  "installCommand": "cd app && npm install",
+  "framework": "nextjs",
+  "outputDirectory": "app/.next"
 }
